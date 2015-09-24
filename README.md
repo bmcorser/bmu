@@ -15,7 +15,7 @@ to trigger Buildbot builds from PRs and report statuses back to GitHub.
 When running CI over a diverse codebase consisting mostly of dynamic languages,
 that will run on homogenous servers and be executed in (mostly) homogenous
 browsers, compiling code against different architectures is not necessary.
-However, being able to target test suites to scope of code change is useful.
+However, being able to target test suites to _scope of code change_ is useful.
 For example, when implementing a new JavaScript function, it doesn’t
 necessarily make sense to run the Python unit/functional test suite. We should
 [fail fast](https://en.wikipedia.org/wiki/Fail-fast). `bmu` allows developers
@@ -26,10 +26,8 @@ configuration file (described below).
 
 ## Config
 
-### `bmu`
-
-Tell `bmu` about your repositories and their respective {label -> builder}
-mappings with a big YAML blob.
+Tell `bmu` about your repositories and their respective builders with a big
+blob of YAML.
 
 ``` yaml
 auth: <GITHUB_TOKEN>
@@ -45,12 +43,11 @@ repos:
       - web
 ```
 
-The above configuration is `bmu`'s own config. You can see in the
-`bmcorser/bmu` repo there are two branches of builders (`python` and `web`) and
-that the `python` branch has two “sub-branches” (`-> unit` and `->
-functional`). The `-> unit` branch also has two silly nodes, `yellow`
-and `blue`. From this config config above, the following labels will be
-created:
+The above configuration is `bmu`'s own (rather contrived) config. You can see
+in the `bmcorser/bmu` repo there are two branches of builders (`python` and
+`web`) and that the `python` branch has two “sub-branches” (`-> unit` and
+`-> functional`). The `-> unit` branch also has two silly nodes, `yellow` and
+`blue`. From this config config above, the following labels will be created:
 
  - `bmu/python`
  - `bmu/python/unit`
