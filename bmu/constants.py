@@ -1,0 +1,1 @@
+GITHUB_HEADER_SIGNATURE = 'X-Hub-Signature'

@@ -9,6 +9,7 @@ def constants():
     GITHUB_API = 'https://api.github.com'
     constants_dict = {
         'GITHUB_API': GITHUB_API,
+        'WEBHOOK_SECRET': 'bmu-test',
     }
     with open(os.path.join(here, '..', 'GITHUB_TOKEN'), 'r') as GHT:
         constants_dict['GITHUB_TOKEN'] = GHT.read().rstrip('\n')
