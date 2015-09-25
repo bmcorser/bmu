@@ -49,6 +49,7 @@ in the `bmcorser/bmu` repo there are two branches of builders (`python` and
 `-> functional`). The `-> unit` branch also has two silly nodes, `yellow` and
 `blue`. From this config config above, the following labels will be created:
 
+ - `bmu/*`
  - `bmu/python`
  - `bmu/python/unit`
  - `bmu/python/unit/yellow`
@@ -56,7 +57,8 @@ in the `bmcorser/bmu` repo there are two branches of builders (`python` and
  - `bmu/python/functional`
  - `bmu/web`
 
-
+When a PR is labelled with `bmu/python/unit`, for example, the `yellow` and
+`blue` builders will be triggered.
 
 ### Buildbot
 
