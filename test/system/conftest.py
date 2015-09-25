@@ -10,6 +10,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import time
 import uuid
 
 import requests
@@ -57,11 +58,20 @@ def git_run(directory, git_subcommand, return_proc=False, **popen_kwargs):
 @pytest.yield_fixture(scope='session')
 def ngrok_server():
     ngrok_path = os.path.join(os.path.dirname(__file__), 'ngrok')
-    process = run_silent([ngrok_path, 'http', '9000'])
-    url = 'http://localhost:4040/api/tunnels/command_line'
-    tunnel_data = json.loads(requests.get(url).content)
-    yield tunnel_data['public_url']
-    process.terminate()
+    try:
+        process = run_silent([ngrok_path, 'http', '9000'])
+        url = 'http://localhost:4040/api/tunnels/command_line'
+        public_url = json.loads(requests.get(url).content).get('public_url')
+        count = 0
+        while not public_url and count < 10:
+            time.sleep(0.2)
+            public_url = json.loads(requests.get(url).content).get('public_url')
+            count += 1
+        if count == 9 and not public_url:
+            raise Exception('ngrok failed')
+        yield public_url
+    finally:
+        process.terminate()
 
 
 @pytest.fixture
@@ -213,7 +223,7 @@ def system(ngrok_server, bmu_server, github, github_repo, ssh_wrapper):
     system_dict = {
         'public_url': ngrok_server,
         'start_bmu': bmu_server,
-        'remote_name': github_repo,
+        'github_repo': github_repo,
         'local_repo': local_repo,
     }
     nt = collections.namedtuple('system', system_dict.keys())
