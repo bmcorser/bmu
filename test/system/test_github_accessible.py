@@ -2,13 +2,12 @@ import requests
 
 
 def test_event(system, github):
-    create_resp = github('post', "repos/bmcorser/{0}/hooks".format(system.github_repo))
-    create_resp = github(
+    system.git_run(['checkout', '-b', 'ben/hello'])
+    map(system.local_repo.commit, 'abcde')
+    system.git_run(['push', 'origin', 'ben/hello'])
+    resp = github(
         'post',
-        "repos/bmcorser/{0}/hooks".format(system.github_repo),
-        json={
-            'name': 'web',
-            'config': {'url': system.public_url, 'content_type': 'json'}
-        }
+        'repos/bmcorser/{0}/pulls'.format(system.github_repo['name']),
+        json={'title': 'tit', 'base': 'master', 'head': 'ben/hello'}
     )
-    assert create_resp.ok
+    import ipdb;ipdb.set_trace()

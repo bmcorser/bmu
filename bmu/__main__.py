@@ -1,2 +1,2 @@
 from bmu import main
-main()
+main(9000)

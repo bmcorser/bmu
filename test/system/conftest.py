@@ -5,6 +5,7 @@ import pytest
 import collections
 import copy
 from Crypto.PublicKey import RSA
+import functools
 import json
 import os
 import shutil
@@ -54,21 +55,27 @@ def git_run(directory, git_subcommand, return_proc=False, **popen_kwargs):
     retcode = proc.wait()
     return retcode, proc.communicate()
 
+def ngrok_public_url():
+    url = 'http://localhost:4040/api/tunnels/command_line'
+    try:
+        resp = requests.get(url)
+    except requests.ConnectionError:
+        return
+    return json.loads(resp.content).get('public_url')
 
 @pytest.yield_fixture(scope='session')
 def ngrok_server():
     ngrok_path = os.path.join(os.path.dirname(__file__), 'ngrok')
     try:
         process = run_silent([ngrok_path, 'http', '9000'])
-        url = 'http://localhost:4040/api/tunnels/command_line'
-        public_url = json.loads(requests.get(url).content).get('public_url')
         count = 0
+        public_url = ngrok_public_url()
         while not public_url and count < 10:
             time.sleep(0.2)
-            public_url = json.loads(requests.get(url).content).get('public_url')
+            public_url = ngrok_public_url()
             count += 1
         if count == 9 and not public_url:
-            raise Exception('ngrok failed')
+            raise Exception('ngrok failed to start')
         yield public_url
     finally:
         process.terminate()
@@ -100,7 +107,7 @@ def github_repo(constants, github):
         json={'name': name}
     )
     assert create_resp.ok
-    yield name
+    yield create_resp.json()
     delete_resp = github(
         'delete',
         "repos/bmcorser/{0}".format(name)
@@ -197,9 +204,27 @@ def create_temp_repo():
     }
     return collections.namedtuple('repo', repo_dict.keys())(**repo_dict)
 
+@pytest.fixture
+def github_webhook(ngrok_server, github, github_repo):
+    create_resp = github(
+        'post',
+        "repos/bmcorser/{0}/hooks".format(github_repo['name']),
+        json={
+            'name': 'web',
+            'events': [
+                'pull_request',
+            ],
+            'config': {
+                'url': ngrok_server,
+                'content_type': 'json',
+            }
+        }
+    )
+    assert create_resp.ok
+    return create_resp.json()
 
 @pytest.yield_fixture
-def system(ngrok_server, bmu_server, github, github_repo, ssh_wrapper):
+def system(ngrok_server, bmu_server, github, github_repo, github_webhook, ssh_wrapper):
     local_repo = create_temp_repo()
     ssh_wrapper, (prikey, pubkey) = ssh_wrapper
     with open(pubkey, 'r') as pubkey_file:
@@ -207,7 +232,7 @@ def system(ngrok_server, bmu_server, github, github_repo, ssh_wrapper):
     create_resp = github(
         'post',
         'user/keys',
-        json={'title': github_repo, 'key': pubkey_content}
+        json={'title': github_repo['name'], 'key': pubkey_content}
     )
     assert create_resp.ok
     key_id = create_resp.json()['id']
@@ -215,7 +240,7 @@ def system(ngrok_server, bmu_server, github, github_repo, ssh_wrapper):
         'remote',
         'add',
         'origin',
-        "git@github.com:bmcorser/{0}".format(github_repo),
+        "git@github.com:bmcorser/{0}".format(github_repo['name']),
     ])
     # git_run(local_repo.root, ['checkout', '-b', 'new-branch'])
     map(local_repo.commit, 'abcde')
@@ -224,7 +249,9 @@ def system(ngrok_server, bmu_server, github, github_repo, ssh_wrapper):
         'public_url': ngrok_server,
         'start_bmu': bmu_server,
         'github_repo': github_repo,
+        'github_webhook': github_webhook,
         'local_repo': local_repo,
+        'git_run': functools.partial(git_run, local_repo.root, env={'GIT_SSH': ssh_wrapper}),
     }
     nt = collections.namedtuple('system', system_dict.keys())
     yield nt(**system_dict)
