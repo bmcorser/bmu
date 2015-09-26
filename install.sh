@@ -11,3 +11,4 @@ else
 fi
 pip install -r requirements.txt
 pip install -r test-requirements.txt
+pip install -e .
