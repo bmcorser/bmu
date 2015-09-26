@@ -1,3 +1,5 @@
 GITHUB_TOKEN
-system/test/ngrok
+test/system/ngrok
 *.pyc
+.cache
+*.egg-info
