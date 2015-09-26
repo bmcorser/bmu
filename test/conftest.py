@@ -11,7 +11,10 @@ def constants():
         'GITHUB_API': GITHUB_API,
         'WEBHOOK_SECRET': 'bmu-test',
     }
-    with open(os.path.join(here, '..', 'GITHUB_TOKEN'), 'r') as GHT:
-        constants_dict['GITHUB_TOKEN'] = GHT.read().rstrip('\n')
+    try:
+        with open(os.path.join(here, '..', 'GITHUB_TOKEN'), 'r') as GHT:
+            constants_dict['GITHUB_TOKEN'] = GHT.read().rstrip('\n')
+    except:
+        constants_dict['GITHUB_TOKEN'] = os.env['GITHUB_TOKEN']
     nt = collections.namedtuple('constants', constants_dict.keys())
     return nt(**constants_dict)
