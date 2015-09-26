@@ -5,6 +5,8 @@
 > systematically over some surface of a structure while carrying human window
 > washers or mechanical robots to maintain or clean the covered surfaces.
 
+[![Build Status](https://travis-ci.org/bmcorser/bmu.svg?branch=master)](https://travis-ci.org/bmcorser/bmu)
+
 ![BMU](bmu.jpg)
 
 Also, a little Flask server modelled on [Homu](https://github.com/barosl/homu)
