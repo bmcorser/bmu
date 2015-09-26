@@ -2,7 +2,7 @@ import json
 
 import treq
 from klein import Klein
-from twisted.internet import defer
+from twisted.internet import reactor, defer
 
 from . import events
 from .validate import validate_request
@@ -10,8 +10,7 @@ from .validate import validate_request
 app = Klein()
 
 
-@app.route('/', methods=['POST'])
-def gh_events(request):
+def handle_request(request):
     event_name = request.getHeader('X-Github-Event')
     if event_name == 'ping':
         return
@@ -25,7 +24,12 @@ def gh_events(request):
         payload = json.load(request.content)
     except:
         raise Exception('Could not parse JSON from request')
-    d.callback(payload)  # how else to start a Deferred?
+    reactor.callLater(1, d.callback, payload)
+
+@app.route('/', methods=['POST'])
+def gh_events(request):
+    handle_request(request)
+    return 'Thanks for that'
 
 
 def main(port):
