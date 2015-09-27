@@ -32,7 +32,7 @@ class PullRequest(BaseEvent):
         if action not in self.build_actions:
             return
         if 'label' not in action:
-            labels = requests.get(self.pr_dict['issue_url'], auth=('bmcorser', constants.GITHUB_TOKEN)).json()['labels']
+            labels = requests.get(self.pr_dict['issue_url'], auth=(config.GITHUB_USERNAME, config.GITHUB_TOKEN)).json()['labels']
         else:
             'Where do the labels appear?'
             import ipdb;ipdb.set_trace()
