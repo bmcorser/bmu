@@ -19,8 +19,6 @@ import requests
 from bmu import github, config
 
 
-def assert_(result): assert result
-
 def run_silent(cmd, can_fail=False, **overrides):
     'Run a command, but discard its output. Raise on error'
     with open(os.devnull, 'w') as DEVNULL:
