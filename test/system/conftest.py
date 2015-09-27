@@ -16,6 +16,10 @@ import uuid
 
 import requests
 
+from bmu import github, config
+
+
+def assert_(result): assert result
 
 def run_silent(cmd, can_fail=False, **overrides):
     'Run a command, but discard its output. Raise on error'
@@ -89,34 +93,18 @@ def bmu_server():
         return process
 
 
-@pytest.fixture(scope='session')
-def github(constants):
-    def github_fn(method, path, **kwargs):
-        fn = getattr(requests, method)
-        url = os.path.join(constants.GITHUB_API, path)
-        return fn(url, auth=('bmcorser', constants.GITHUB_TOKEN), **kwargs)
-    return github_fn
-
-
-@pytest.yield_fixture(scope='function')
-def github_repo(constants, github):
+@pytest.yield_fixture(scope='session')
+def github_repo():
     name = "bmu-{0}".format(uuid.uuid4().hex[:7])
-    create_resp = github(
-        'post',
-        'user/repos',
-        json={'name': name}
-    )
+    create_resp = github.sync_post('user/repos', json={'name': name})
     assert create_resp.ok
     yield create_resp.json()
-    delete_resp = github(
-        'delete',
-        "repos/bmcorser/{0}".format(name)
-    )
+    delete_resp = github.sync_delete("repos/bmcorser/{0}".format(name))
     assert delete_resp.ok
 
 
-@pytest.fixture(scope='session')
-def ssh_wrapper(github):
+@pytest.yield_fixture(scope='session')
+def ssh_wrapper(github_repo):
     WRAPPER_TEMPLATE = '''#!/bin/bash
 ssh -i {0} $1 $2'''
     key = RSA.generate(2048)
@@ -138,7 +126,20 @@ ssh -i {0} $1 $2'''
     wrapper.close()
     os.chmod(wrapper.name, 0755)
 
-    return wrapper.name, (private.name, public.name)
+    with open(public.name, 'r') as pubkey_file:
+        pubkey_content = pubkey_file.read()
+    create_resp = github.sync_post(
+        'user/keys',
+        json={'title': github_repo['name'], 'key': pubkey_content}
+    )
+    assert create_resp.ok
+    key_id = create_resp.json()['id']
+
+    yield wrapper.name
+
+    map(os.remove, (wrapper.name, private.name, public.name))
+    delete_resp = github.sync_delete("user/keys/{0}".format(key_id))
+    assert delete_resp.ok
 
 
 def create_temp_repo():
@@ -205,9 +206,8 @@ def create_temp_repo():
     return collections.namedtuple('repo', repo_dict.keys())(**repo_dict)
 
 @pytest.fixture
-def github_webhook(constants, ngrok_server, github, github_repo):
-    create_resp = github(
-        'post',
+def github_webhook(ngrok_server, github_repo):
+    create_resp = github.sync_post(
         "repos/bmcorser/{0}/hooks".format(github_repo['name']),
         json={
             'name': 'web',
@@ -217,7 +217,7 @@ def github_webhook(constants, ngrok_server, github, github_repo):
             'config': {
                 'url': ngrok_server,
                 'content_type': 'json',
-                'secret': constants.GITHUB_WEBHOOK_SECRET,
+                'secret': config.github_webhook_secret,
             }
         }
     )
@@ -225,25 +225,14 @@ def github_webhook(constants, ngrok_server, github, github_repo):
     return create_resp.json()
 
 @pytest.yield_fixture
-def system(ngrok_server, bmu_server, github, github_repo, github_webhook, ssh_wrapper):
+def system(ngrok_server, bmu_server, github_repo, github_webhook, ssh_wrapper):
     local_repo = create_temp_repo()
-    ssh_wrapper, (prikey, pubkey) = ssh_wrapper
-    with open(pubkey, 'r') as pubkey_file:
-        pubkey_content = pubkey_file.read()
-    create_resp = github(
-        'post',
-        'user/keys',
-        json={'title': github_repo['name'], 'key': pubkey_content}
-    )
-    assert create_resp.ok
-    key_id = create_resp.json()['id']
     git_run(local_repo.root, [
         'remote',
         'add',
         'origin',
         "git@github.com:bmcorser/{0}".format(github_repo['name']),
     ])
-    # git_run(local_repo.root, ['checkout', '-b', 'new-branch'])
     map(local_repo.commit, 'abcde')
     retcode, (out, err) = git_run(local_repo.root, ['push', 'origin', 'master'], env={'GIT_SSH': ssh_wrapper})
     system_dict = {
@@ -257,6 +246,3 @@ def system(ngrok_server, bmu_server, github, github_repo, github_webhook, ssh_wr
     nt = collections.namedtuple('system', system_dict.keys())
     yield nt(**system_dict)
     local_repo.cleanup()
-    map(os.remove, (ssh_wrapper, prikey, pubkey))
-    delete_resp = github('delete', "user/keys/{0}".format(key_id))
-    assert delete_resp.ok

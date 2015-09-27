@@ -3,7 +3,8 @@ import hashlib
 import hmac
 import json
 
-from bmu import constants
+from . import constants
+from . import config
 
 
 def validate_content(secret, request_hash, content):
@@ -15,19 +16,19 @@ def validate_content(secret, request_hash, content):
 
 def payload(request):
     'Validate a request really came from GitHub, try to return the payload'
-    signature = request.getHeader(constants.GITHUB_HEADER_SIGNATURE)
+    signature = request.getHeader(constants.GITHUB_API_HEADER_SIGNATURE)
     if not signature:
         raise Exception(
             "The request did not have the signature header: {0}".format(
-                constants.GITHUB_HEADER_SIGNATURE
+                constants.GITHUB_API_HEADER_SIGNATURE
             )
         )
     head, _, request_hash = signature.partition('=')
     if head != 'sha1':
         raise Exception('The signature did not use the SHA1 hash function')
     content = request.content.read()
-    validate_content(constants.GITHUB_WEBHOOK_SECRET, request_hash, content)
+    validate_content(config.github_webhook_secret, request_hash, content)
     try:
-        return json.load(content)
+        return json.loads(content)
     except:
         raise Exception('Could not parse JSON from request')

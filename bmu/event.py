@@ -1,10 +1,12 @@
-import requests
-from bmu import constants
+from twisted.internet import defer, reactor
+from . import github
+
 
 class BaseEvent(object):
 
     def __init__(self, payload):
         self.payload = payload
+        self.deferred = defer.Deferred()
 
 
 class Ping(BaseEvent):
@@ -32,13 +34,15 @@ class PullRequest(BaseEvent):
         if action not in self.build_actions:
             return
         if 'label' not in action:
-            labels = requests.get(self.pr_dict['issue_url'], auth=(config.GITHUB_USERNAME, config.GITHUB_TOKEN)).json()['labels']
+            labels = github.get(self.pr_dict['issue_url'])
+            labels.addCallback(github.key('labels'))
         else:
             'Where do the labels appear?'
             import ipdb;ipdb.set_trace()
-        self.build()
+        self.deferred.addCallback(self.build)
+        reactor.callLater(0, self.deferred.callback(labels))
 
-    def build(self):
+    def build(self, labels):
         repo = self.payload['repository']['full_name']
         commit = self.pr_dict['merge_commit_sha']
         branch = self.pr_dict['head']['ref']
@@ -50,7 +54,7 @@ class IssueComment(BaseEvent):
     def __call__(self):
         pass
 
-handlers = {
+handler = {
     'pull_request': PullRequest,
     'ping': Ping,
     'issue_comment': IssueComment,

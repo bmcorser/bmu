@@ -3,12 +3,13 @@ from twisted.internet import reactor
 
 from . import event
 from . import validate
+from . import constants
 
 app = Klein()
 
 
 def handle_request(request):
-    event_name = request.getHeader('X-Github-Event')
+    event_name = request.getHeader(constants.GITHUB_API_HEADER_EVENT)
     handler = event.handler.get(event_name)
     if not handler:
         return "GitHub event `{0}` is not supported".format(event_name)
