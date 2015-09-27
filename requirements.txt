@@ -2,3 +2,5 @@ requests
 pycrypto
 treq
 klein
+pyyaml
+
