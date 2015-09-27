@@ -234,14 +234,22 @@ def system(ngrok_server, bmu_server, github_repo, github_webhook, ssh_wrapper):
         "git@github.com:bmcorser/{0}".format(github_repo['name']),
     ])
     map(local_repo.commit, 'abcde')
-    retcode, (out, err) = git_run(local_repo.root, ['push', 'origin', 'master'], env={'GIT_SSH': ssh_wrapper})
+    retcode, (out, err) = git_run(
+        local_repo.root,
+        ['push', 'origin', 'master'],
+        env={'GIT_SSH': ssh_wrapper}
+    )
     system_dict = {
         'public_url': ngrok_server,
         'start_bmu': bmu_server,
         'github_repo': github_repo,
         'github_webhook': github_webhook,
         'local_repo': local_repo,
-        'git_run': functools.partial(git_run, local_repo.root, env={'GIT_SSH': ssh_wrapper}),
+        'git_run': functools.partial(
+            git_run,
+            local_repo.root,
+            env={'GIT_SSH': ssh_wrapper}
+        ),
     }
     nt = collections.namedtuple('system', system_dict.keys())
     yield nt(**system_dict)
