@@ -205,7 +205,7 @@ def create_temp_repo():
     return collections.namedtuple('repo', repo_dict.keys())(**repo_dict)
 
 @pytest.fixture
-def github_webhook(ngrok_server, github, github_repo):
+def github_webhook(constants, ngrok_server, github, github_repo):
     create_resp = github(
         'post',
         "repos/bmcorser/{0}/hooks".format(github_repo['name']),
@@ -217,6 +217,7 @@ def github_webhook(ngrok_server, github, github_repo):
             'config': {
                 'url': ngrok_server,
                 'content_type': 'json',
+                'secret': constants.GITHUB_WEBHOOK_SECRET,
             }
         }
     )

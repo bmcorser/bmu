@@ -1,3 +1,4 @@
+import uuid
 import requests
 
 
@@ -14,4 +15,5 @@ def test_event(system, github):
             json={'title': 'tit', 'base': 'master', 'head': name}
         )
         return resp
-    # import ipdb;ipdb.set_trace()
+    resp = make_pr(uuid.uuid4().hex)
+    import ipdb;ipdb.set_trace()

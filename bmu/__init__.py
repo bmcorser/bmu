@@ -1,30 +1,21 @@
-import json
-
-import treq
 from klein import Klein
-from twisted.internet import reactor, defer
+from twisted.internet import reactor
 
-from . import events
-from .validate import validate_request
+from . import event
+from . import validate
 
 app = Klein()
 
 
 def handle_request(request):
     event_name = request.getHeader('X-Github-Event')
-    if event_name == 'ping':
-        return
-    event_handler = getattr(events, event_name, None)
-    if not event_handler:
+    handler = event.handler.get(event_name)
+    if not handler:
         return "GitHub event `{0}` is not supported".format(event_name)
-    # validate_request(request)
-    d = defer.Deferred()
-    d.addCallback(event_handler)
-    try:
-        payload = json.load(request.content)
-    except:
-        raise Exception('Could not parse JSON from request')
-    reactor.callLater(1, d.callback, payload)
+    payload = validate.payload(request)
+    handler_instance = handler(payload)
+    reactor.callLater(1, handler_instance)
+
 
 @app.route('/', methods=['POST'])
 def gh_events(request):

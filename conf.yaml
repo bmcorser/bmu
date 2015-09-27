@@ -1,0 +1,11 @@
+github_user: bmcorser
+label_namespace: bmu
+repos:
+  bmcorser:
+    bmu:
+      - python:
+         - unit:
+           - yellow
+           - blue
+         - functional
+      - system
