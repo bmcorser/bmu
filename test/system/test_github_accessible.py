@@ -11,8 +11,8 @@ def test_event(system):
         system.git_run(['push', 'origin', name])
         resp = bmu.github.sync_post(
             'repos/bmcorser/{0}/pulls'.format(system.github_repo['name']),
-            json={'title': 'tit', 'base': 'master', 'head': name}
+            json={'title': "PR for {0}".format(name), 'base': 'master', 'head': name}
         )
         return resp
-    resp = make_pr(uuid.uuid4().hex)
+    resp = make_pr("branch-{0}".format(uuid.uuid4().hex[:7]))
     import ipdb;ipdb.set_trace()

@@ -4,6 +4,7 @@ from twisted.internet import reactor
 from . import event
 from . import validate
 from . import constants
+from . import label
 
 app = Klein()
 
@@ -25,4 +26,5 @@ def gh_events(request):
 
 
 def main(port):
+    label.init()
     app.run("localhost", port)

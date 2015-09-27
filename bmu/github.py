@@ -7,12 +7,14 @@ from . import config
 
 
 def call_json(response):
+    import ipdb;ipdb.set_trace()
     return response.json()
 
 
 def key(name):
     'Return a closure that returns the passed key from the passed data'
     def get(data):
+        import ipdb;ipdb.set_trace()
         return data[name]
     return get
 
@@ -23,7 +25,7 @@ def request(method, url, **kwargs):
         url = os.path.join(constants.GITHUB_API, url)
     auth_tuple = (config.github_user, config.github_token)
     fn = getattr(treq, method)
-    return fn(url, auth=auth_tuple, **kwargs).addCallback(call_json)
+    return fn(url.encode('utf-8'), auth=auth_tuple, **kwargs).addCallback(call_json)
 
 
 def sync_request(method, url, **kwargs):

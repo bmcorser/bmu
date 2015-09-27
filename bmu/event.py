@@ -29,20 +29,22 @@ class PullRequest(BaseEvent):
         self.pr_dict = payload['pull_request']
         super(PullRequest, self).__init__(payload)
 
+    def get_labels(self, issue_url):
+        return labels
+
     def __call__(self):
-        action = payload['action']
+        action = self.payload['action']
         if action not in self.build_actions:
             return
         if 'label' not in action:
-            labels = github.get(self.pr_dict['issue_url'])
-            labels.addCallback(github.key('labels'))
+            labels = github.sync_get(self.pr_dict['issue_url']).json()['labels']
         else:
             'Where do the labels appear?'
             import ipdb;ipdb.set_trace()
-        self.deferred.addCallback(self.build)
-        reactor.callLater(0, self.deferred.callback(labels))
+        self.build(labels)
 
     def build(self, labels):
+        print("Building against labels: {0}".format(labels))
         repo = self.payload['repository']['full_name']
         commit = self.pr_dict['merge_commit_sha']
         branch = self.pr_dict['head']['ref']

@@ -1,5 +1,7 @@
 github_user: bmcorser
-label_namespace: bmu
+label:
+    namespace: bmu
+    hex: 0074d9
 repos:
   bmcorser:
     bmu:
