@@ -1,6 +1,7 @@
-requests
-pycrypto
-treq
 klein
+plumbum
+pycrypto
 pyyaml
+requests
+treq
 

@@ -10,6 +10,12 @@ setup(
     author_email='bmcorser@gmail.com',
     url='https://github.com/bmcorser/bmu',
     packages=['bmu'],
-    install_requires=['klein', 'requests', 'pycrypto', 'pyyaml'],
+    install_requires=[
+        'klein',
+        'plumbum',
+        'pycrypto',
+        'pyyaml'
+        'requests',
+    ],
     tests_require=['pytest'],
 )

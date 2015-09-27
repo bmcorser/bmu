@@ -1,2 +1,3 @@
-from bmu import main
-main(9000)
+from . import cli
+
+cli.Cli.run()
