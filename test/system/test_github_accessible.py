@@ -2,7 +2,7 @@ import uuid
 import bmu
 
 
-def test_event(system):
+def test_event(system, bmu_conf):
     def make_pr(name):
         system.git_run(['fetch', 'origin'])
         system.git_run(['reset', '--hard', 'origin/master'])

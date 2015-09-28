@@ -1,5 +1,6 @@
 import functools
 import requests
+import grequests
 import treq
 import os
 from . import constants
@@ -28,13 +29,13 @@ def request(method, url, **kwargs):
     return fn(url.encode('utf-8'), auth=auth_tuple, **kwargs).addCallback(call_json)
 
 
-def sync_request(method, url, **kwargs):
+def sync_request(method, url, use_gevent=False, **kwargs):
     'Close a requests request with configured authentication'
     if not url.startswith('https://'):
         url = os.path.join(constants.GITHUB_API, url)
     auth_tuple = (config.github_user, config.github_token)
-    fn = getattr(requests, method)
-    return fn(url, auth=auth_tuple, **kwargs)
+    mod = grequests if use_gevent else requests
+    return getattr(mod, method)(url, auth=auth_tuple, **kwargs)
 
 
 for __method in ['post', 'get', 'delete']:

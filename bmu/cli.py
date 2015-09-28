@@ -16,5 +16,5 @@ class Cli(cli.Application):
         self._conf_path = conf_path
 
     def main(self):
-        config.init(self._conf_path)
+        config.populate(self._conf_path)
         server.main(self._port)

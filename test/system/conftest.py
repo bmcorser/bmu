@@ -4,7 +4,6 @@ import pytest
 
 import collections
 import copy
-from Crypto.PublicKey import RSA
 import functools
 import json
 import os
@@ -14,6 +13,7 @@ import tempfile
 import time
 import uuid
 
+from Crypto.PublicKey import RSA
 import requests
 
 from bmu import github, config
@@ -57,6 +57,7 @@ def git_run(directory, git_subcommand, return_proc=False, **popen_kwargs):
     retcode = proc.wait()
     return retcode, proc.communicate()
 
+
 def ngrok_public_url():
     url = 'http://localhost:4040/api/tunnels/command_line'
     try:
@@ -64,6 +65,7 @@ def ngrok_public_url():
     except requests.ConnectionError:
         return
     return json.loads(resp.content).get('public_url')
+
 
 @pytest.yield_fixture(scope='session')
 def ngrok_server():
@@ -82,15 +84,6 @@ def ngrok_server():
     finally:
         process.terminate()
 
-
-@pytest.fixture
-def bmu_server():
-    def start_server(opts):
-        global process
-        process = run_silent(['python', '-m', 'bmu'])
-        return process
-
-
 @pytest.yield_fixture(scope='session')
 def github_repo():
     name = "bmu-{0}".format(uuid.uuid4().hex[:7])
@@ -99,6 +92,37 @@ def github_repo():
     yield create_resp.json()
     delete_resp = github.sync_delete("repos/bmcorser/{0}".format(name))
     assert delete_resp.ok
+
+
+@pytest.yield_fixture(scope='session')
+def bmu_conf(github_repo):
+    conf_yaml = tempfile.NamedTemporaryFile(delete=False)
+    user, _, repo = github_repo['full_name'].partition('/')
+    conf_yaml.write('''\
+repos:
+  {0}:
+    {1}:
+      - a:
+        - b
+        - c
+      - d:
+        - e:
+          - f
+          - g
+      - h
+'''.format(user, repo))
+    conf_yaml.file.flush()
+    conf_yaml.close()
+    config.populate(conf_yaml.name)
+    yield conf_yaml.name
+    os.remove(conf_yaml.name)
+
+
+@pytest.fixture
+def bmu_server():
+    def start_server(cli_args):
+        process = run_silent(['python', '-m', 'bmu'] + cli_args)
+        return process
 
 
 @pytest.yield_fixture(scope='session')
@@ -203,8 +227,9 @@ def create_temp_repo():
     }
     return collections.namedtuple('repo', repo_dict.keys())(**repo_dict)
 
+
 @pytest.fixture
-def github_webhook(ngrok_server, github_repo):
+def github_webhook(ngrok_server, bmu_conf, github_repo):
     create_resp = github.sync_post(
         "repos/bmcorser/{0}/hooks".format(github_repo['name']),
         json={
@@ -221,6 +246,7 @@ def github_webhook(ngrok_server, github_repo):
     )
     assert create_resp.ok
     return create_resp.json()
+
 
 @pytest.yield_fixture
 def system(ngrok_server, bmu_server, github_repo, github_webhook, ssh_wrapper):
