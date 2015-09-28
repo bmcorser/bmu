@@ -15,4 +15,4 @@ def test_event(system, bmu_conf):
         )
         return resp
     resp = make_pr("branch-{0}".format(uuid.uuid4().hex[:7]))
-    import ipdb;ipdb.set_trace()
+    # import ipdb;ipdb.set_trace()

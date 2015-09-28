@@ -40,7 +40,7 @@ class PullRequest(BaseEvent):
             labels = github.sync_get(self.pr_dict['issue_url']).json()['labels']
         else:
             'Where do the labels appear?'
-            import ipdb;ipdb.set_trace()
+            # import ipdb;ipdb.set_trace()
         self.build(labels)
 
     def build(self, labels):

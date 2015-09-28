@@ -8,14 +8,14 @@ from . import config
 
 
 def call_json(response):
-    import ipdb;ipdb.set_trace()
+    # import ipdb;ipdb.set_trace()
     return response.json()
 
 
 def key(name):
     'Return a closure that returns the passed key from the passed data'
     def get(data):
-        import ipdb;ipdb.set_trace()
+        # import ipdb;ipdb.set_trace()
         return data[name]
     return get
 
