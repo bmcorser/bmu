@@ -2,58 +2,65 @@ from twisted.internet import defer, reactor
 from . import github
 
 
-class BaseEvent(object):
+class BaseGitHubEvent(object):
 
     def __init__(self, payload):
         self.payload = payload
         self.deferred = defer.Deferred()
 
 
-class Ping(BaseEvent):
+class BaseBuildbotEvent(object):
+
+
+class Ping(BaseGitHubEvent):
 
     def __call__(self):
         return
 
 
-class PullRequest(BaseEvent):
+class PullRequest(BaseGitHubEvent):
 
     build_actions = (
         'labeled',
-        'unlabeled',
         'opened',
         'reopened',
         'synchronize',
     )
 
     def __init__(self, payload):
-        self.pr_dict = payload['pull_request']
+        pr_dict = payload['pull_request']
+        self.repo = payload['repository']['full_name']
+        self.merge_commit = pr_dict['merge_commit_sha']
+        self.branch = pr_dict['head']['ref']
+        self.number = pr_dict['number']
+        self.pr_dict = pr_dict
         super(PullRequest, self).__init__(payload)
-
-    def get_labels(self, issue_url):
-        return labels
 
     def __call__(self):
         action = self.payload['action']
+        print(action)
         if action not in self.build_actions:
             return
-        if 'label' not in action:
-            labels = github.sync_get(self.pr_dict['issue_url']).json()['labels']
-        else:
-            'Where do the labels appear?'
-            # import ipdb;ipdb.set_trace()
+        if action == 'labeled':
+            self.build([self.payload['label']])
+            return
+        labels = github.sync_get(self.pr_dict['issue_url']).json()['labels']
         self.build(labels)
 
     def build(self, labels):
+        if not self.pr_dict['mergeable']:
+            print("Not mergeable :(")
+            return
         print("Building against labels: {0}".format(labels))
-        repo = self.payload['repository']['full_name']
-        commit = self.pr_dict['merge_commit_sha']
-        branch = self.pr_dict['head']['ref']
-        is_mergeable = self.pr_dict['mergeable_state'] == 'clean'
-        pr_number = self.pr_dict['number']
 
-class IssueComment(BaseEvent):
+
+class IssueComment(BaseGitHubEvent):
 
     def __call__(self):
+        body = self.payload['comment']['body']
+        commenter = self.payload['comment']['user']['login']
+        if commenter == config.github_user
+        import ipdb;ipdb.set_trace()
         pass
 
 handler = {

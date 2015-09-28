@@ -236,6 +236,7 @@ def github_webhook(ngrok_server, bmu_conf, github_repo):
             'name': 'web',
             'events': [
                 'pull_request',
+                'issue_comment',
             ],
             'config': {
                 'url': ngrok_server,
