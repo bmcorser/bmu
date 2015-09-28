@@ -11,7 +11,7 @@ SECRET = 'real-secret'
 @pytest.fixture
 def args():
     content = 'abc'
-    sig = hmac.new(SECRET, 'abc', sha1).digest().encode('base64').rstrip('\n')
+    sig = hmac.HMAC(SECRET, 'abc', sha1).hexdigest()
     return SECRET, sig, content
 
 
