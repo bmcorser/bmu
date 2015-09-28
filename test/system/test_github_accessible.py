@@ -17,9 +17,9 @@ def test_event(system, bmu_conf):
         return resp
     pr_json = make_pr("branch-{0}".format(uuid.uuid4().hex[:7])).json()
     repo_labels = sorted(label.get_existing_labels(system.github_repo['full_name']))
-    import ipdb;ipdb.set_trace()
+    # import ipdb;ipdb.set_trace()
     resp = github.sync_request(
         'patch',
         "repos/bmcorser/{0}/issues/{1}".format(system.github_repo['name'], pr_json['number']),
-        json={'labels': repo_labels[:3]}
+        json={'labels': repo_labels[2:4]}
     )
