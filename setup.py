@@ -11,10 +11,11 @@ setup(
     url='https://github.com/bmcorser/bmu',
     packages=['bmu'],
     install_requires=[
+        'grequests',
         'klein',
         'plumbum',
         'pycrypto',
-        'pyyaml'
+        'pyyaml',
         'requests',
     ],
     tests_require=['pytest'],
