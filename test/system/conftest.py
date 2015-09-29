@@ -87,9 +87,11 @@ def ngrok_server():
 @pytest.yield_fixture(scope='session')
 def github_repo():
     name = "bmu-{0}".format(uuid.uuid4().hex[:7])
+    print("Creating GitHub repo {0} ...".format(name))
     create_resp = github.sync_post('user/repos', json={'name': name})
     assert create_resp.ok
     yield create_resp.json()
+    print("Deleting GitHub repo {0} ...".format(name))
     delete_resp = github.sync_delete("repos/bmcorser/{0}".format(name))
     assert delete_resp.ok
 
@@ -129,8 +131,9 @@ def bmu_server():
 def echoserver(ngrok_server):
 
     def start_server(n, port=9000):
+        print("Starting kamikaze echoserver for {0} requests ...".format(n))
         process = run_silent(
-            ['python', 'echo_server.py', '-n', str(n), '-p', str(port)],
+            ['python', 'echoserver.py', '-n', str(n), '-p', str(port)],
             stderr=subprocess.PIPE,
             stdout=subprocess.PIPE,
             cwd=os.path.abspath(os.path.dirname(__file__)),
@@ -138,6 +141,7 @@ def echoserver(ngrok_server):
         awake = None
         fmt_str = "When asked if awake, the echo server at {0} said: {1}"
         while not awake:
+            print("Pinging kamikaze echoserver ...")
             url = "{0}/awake".format(ngrok_server)
             resp = requests.get(url)
             if resp.ok:
@@ -145,13 +149,22 @@ def echoserver(ngrok_server):
                 awake = True
         return process
 
-    def get_data(proc, force=False):
-        if proc.poll() is None and not force:
+    def get_data(proc, wait=True, force=False):
+        retcode = proc.poll()
+        if retcode is None and not force and not wait:
             raise Exception('The echo server is not ripe for harvesting')
-        elif proc.poll() is None and force:
+        elif retcode is None and force:
             ripe = None
             while not ripe:
-                resp = requests.post("http://{0}".format(ngrok_server))
+                print('Exhausting echoserver by force ...')
+                resp = requests.post(ngrok_server)
+                if resp.status_code == 502:
+                    ripe = True
+        elif retcode is None and wait and not force:
+            ripe = None
+            while not ripe:
+                print("Waiting for kamikaze echoserver to be exhausted ...")
+                resp = requests.get("{0}/awake".format(ngrok_server))
                 if resp.status_code == 502:
                     ripe = True
         if proc.poll() is None:
@@ -191,6 +204,7 @@ ssh -i {0} $1 $2'''
 
     with open(public.name, 'r') as pubkey_file:
         pubkey_content = pubkey_file.read()
+    print('Adding temp pubkey to GitHub ...')
     create_resp = github.sync_post(
         'user/keys',
         json={'title': github_repo['name'], 'key': pubkey_content}
@@ -201,6 +215,7 @@ ssh -i {0} $1 $2'''
     yield wrapper.name
 
     map(os.remove, (wrapper.name, private.name, public.name))
+    print('Deleting temp pubkey from GitHub ...')
     delete_resp = github.sync_delete("user/keys/{0}".format(key_id))
     assert delete_resp.ok
 
@@ -271,6 +286,7 @@ def create_temp_repo():
 
 @pytest.fixture
 def github_webhook(ngrok_server, bmu_conf, github_repo):
+    print("Creating GitHub webhook for {0} ...".format(github_repo['name']))
     create_resp = github.sync_post(
         "repos/bmcorser/{0}/hooks".format(github_repo['name']),
         json={
@@ -289,7 +305,6 @@ def github_webhook(ngrok_server, bmu_conf, github_repo):
     assert create_resp.ok
     return create_resp.json()
 
-
 @pytest.yield_fixture
 def system(ngrok_server, bmu_server, github_repo, github_webhook, ssh_wrapper):
     local_repo = create_temp_repo()
@@ -300,6 +315,7 @@ def system(ngrok_server, bmu_server, github_repo, github_webhook, ssh_wrapper):
         "git@github.com:bmcorser/{0}".format(github_repo['name']),
     ])
     map(local_repo.commit, 'abcde')
+    print("Pushing local repo to GitHub ...")
     retcode, (out, err) = git_run(
         local_repo.root,
         ['push', 'origin', 'master'],
@@ -320,3 +336,31 @@ def system(ngrok_server, bmu_server, github_repo, github_webhook, ssh_wrapper):
     nt = collections.namedtuple('system', system_dict.keys())
     yield nt(**system_dict)
     local_repo.cleanup()
+
+
+@pytest.yield_fixture
+def new_pr(system):
+    name = "branch-{0}".format(uuid.uuid4().hex[:7])
+    system.git_run(['fetch', 'origin'])
+    system.git_run(['reset', '--hard', 'origin/master'])
+    system.git_run(['checkout', '-b', name])
+    map(system.local_repo.commit, 'abcde')
+    system.git_run(['push', 'origin', name])
+    print("Creating PR for {0} on GitHub  ...".format(name))
+    create_resp = github.sync_post(
+        'repos/bmcorser/{0}/pulls'.format(system.github_repo['name']),
+        json={'title': "PR for {0}".format(name), 'base': 'master', 'head': name}
+    )
+    pr_json = create_resp.json()
+    yield pr_json
+    print("Closing PR for {0} on GitHub  ...".format(name))
+    close_resp = github.sync_request(
+        'patch',
+        'repos/{0}/{1}/pulls/{2}'.format(
+            config.github_user,
+            system.github_repo['name'],
+            pr_json['number'],
+        ),
+        json={'state': 'closed'},
+    )
+    assert close_resp.ok
