@@ -170,7 +170,10 @@ def echoserver(ngrok_server):
         if proc.poll() is None:
             raise Exception('Something went wrong')
         out, _ = proc.communicate()
-        return map(lambda x: json.load(open(x)), json.loads(out))
+        file_list = json.loads(out)
+        data = map(lambda x: json.load(open(x)), file_list)
+        map(os.remove, file_list)
+        return data
 
     echoserver_dict = {
         'start': start_server,
