@@ -342,7 +342,7 @@ def system(ngrok_server, bmu_server, github_repo, github_webhook, ssh_wrapper):
 
 
 @pytest.yield_fixture
-def new_pr(system):
+def new_pr(system, echoserver):
     name = "branch-{0}".format(uuid.uuid4().hex[:7])
     system.git_run(['fetch', 'origin'])
     system.git_run(['reset', '--hard', 'origin/master'])
@@ -350,11 +350,13 @@ def new_pr(system):
     map(system.local_repo.commit, 'abcde')
     system.git_run(['push', 'origin', name])
     print("Creating PR for {0} on GitHub  ...".format(name))
+    proc = echoserver.start(1)
     create_resp = github.sync_post(
         'repos/bmcorser/{0}/pulls'.format(system.github_repo['name']),
         json={'title': "PR for {0}".format(name), 'base': 'master', 'head': name}
     )
     pr_json = create_resp.json()
+    assert echoserver.get_data(proc)[0]['action'] == 'opened'
     yield pr_json
     print("Closing PR for {0} on GitHub  ...".format(name))
     close_resp = github.sync_request(
