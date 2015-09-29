@@ -11,6 +11,9 @@ app = Flask(__name__)
 
 CURRENT = 0
 
+@app.route('/awake')
+def awake():
+    return 'Yes!'
 
 class ServeN(cli.Application):
     'Serve a number of requests then harikiri'
@@ -31,7 +34,7 @@ class ServeN(cli.Application):
         ]
 
         @app.route('/', methods=['POST'])
-        def everything():
+        def dump_data():
             global CURRENT
             try:
                 current_file = file_list[CURRENT]

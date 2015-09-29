@@ -125,6 +125,47 @@ def bmu_server():
         return process
 
 
+@pytest.fixture
+def echoserver(ngrok_server):
+
+    def start_server(n, port=9000):
+        process = run_silent(
+            ['python', 'echo_server.py', '-n', str(n), '-p', str(port)],
+            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            cwd=os.path.abspath(os.path.dirname(__file__)),
+        )
+        awake = None
+        fmt_str = "When asked if awake, the echo server at {0} said: {1}"
+        while not awake:
+            url = "{0}/awake".format(ngrok_server)
+            resp = requests.get(url)
+            if resp.ok:
+                print(fmt_str.format(ngrok_server, resp.content))
+                awake = True
+        return process
+
+    def get_data(proc, force=False):
+        if proc.poll() is None and not force:
+            raise Exception('The echo server is not ripe for harvesting')
+        elif proc.poll() is None and force:
+            ripe = None
+            while not ripe:
+                resp = requests.post("http://{0}".format(ngrok_server))
+                if resp.status_code == 502:
+                    ripe = True
+        if proc.poll() is None:
+            raise Exception('Something went wrong')
+        out, _ = proc.communicate()
+        return map(lambda x: json.load(open(x)), json.loads(out))
+
+    echoserver_dict = {
+        'start': start_server,
+        'get_data': get_data,
+    }
+    return collections.namedtuple('echoserver', echoserver_dict.keys())(**echoserver_dict)
+
+
 @pytest.yield_fixture(scope='session')
 def ssh_wrapper(github_repo):
     WRAPPER_TEMPLATE = '''#!/bin/bash
@@ -176,16 +217,16 @@ def create_temp_repo():
     git_run(local, ['config', 'user.email', user_email])
 
     # set up time-related things
-    global time
-    time = 1329000000
+    global git_time
+    git_time = 1329000000
 
     def incr_time():
         'Increment the time that Git knows about'
-        global time
-        time += 100
+        global git_time
+        git_time += 100
         os.environ.update({
-            'GIT_COMMITTER_DATE': "{0} +0000".format(time),
-            'GIT_AUTHOR_DATE': "{0} +0000".format(time),
+            'GIT_COMMITTER_DATE': "{0} +0000".format(git_time),
+            'GIT_AUTHOR_DATE': "{0} +0000".format(git_time),
         })
 
     def touch(path):
@@ -206,7 +247,7 @@ def create_temp_repo():
             local,
             ['commit', '-m', name],
             env=incr_time())
-        return out.split()[1].strip(']'), copy.copy(time)
+        return out.split()[1].strip(']'), copy.copy(git_time)
 
     touch('README.md')
     git_run(local, ['add', '.'])
@@ -223,7 +264,7 @@ def create_temp_repo():
         'root': local,
         'cleanup': cleanup,
         'incr_time': incr_time,
-        'time': time,
+        'time': git_time,
     }
     return collections.namedtuple('repo', repo_dict.keys())(**repo_dict)
 
