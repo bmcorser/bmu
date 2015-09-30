@@ -87,7 +87,6 @@ def github_repo():
     delete_resp = github.sync_delete("repos/bmcorser/{0}".format(name))
     assert delete_resp.ok
 
-
 @pytest.yield_fixture(scope='session')
 def bmu_conf(github_repo):
     conf_yaml = tempfile.NamedTemporaryFile(delete=False)
@@ -345,7 +344,11 @@ def new_pr(system, echoserver):
     proc = echoserver.start(1)
     create_resp = github.sync_post(
         'repos/bmcorser/{0}/pulls'.format(system.github_repo['name']),
-        json={'title': "PR for {0}".format(name), 'base': 'master', 'head': name}
+        json={
+            'title': "PR for {0}".format(name),
+            'base': 'master',
+            'head': name,
+        }
     )
     pr_json = create_resp.json()
     assert echoserver.get_data(proc)[0]['payload']['action'] == 'opened'
@@ -361,4 +364,3 @@ def new_pr(system, echoserver):
         json={'state': 'closed'},
     )
     assert close_resp.ok
-    new_pr.__call__ = new_pr

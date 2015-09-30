@@ -5,7 +5,7 @@ from bmu import label
 def test_event(system, new_pr, bmu_conf, echoserver):
     label.init()
     repo_labels = sorted(label.get_existing_labels(system.github_repo['full_name']))
-    proc = echoserver.start(3)
+    import ipdb;ipdb.set_trace()
     label_resp = github.sync_request(
         'patch',
         "repos/bmcorser/{0}/issues/{1}".format(
