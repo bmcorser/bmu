@@ -60,29 +60,21 @@ def git_run(directory, git_subcommand, return_proc=False, **popen_kwargs):
 
 def ngrok_public_url():
     url = 'http://localhost:4040/api/tunnels/command_line'
-    try:
-        resp = requests.get(url)
-    except requests.ConnectionError:
-        return
-    return json.loads(resp.content).get('public_url')
+    while True:
+        try:
+            resp = requests.get(url)
+            return resp.json()['public_url']
+        except (requests.ConnectionError, KeyError):
+            pass
 
 
 @pytest.yield_fixture(scope='session')
 def ngrok_server():
     ngrok_path = os.path.join(os.path.dirname(__file__), 'ngrok')
-    try:
-        process = run_silent([ngrok_path, 'http', '9000'])
-        count = 0
-        public_url = ngrok_public_url()
-        while not public_url and count < 10:
-            time.sleep(0.2)
-            public_url = ngrok_public_url()
-            count += 1
-        if count == 9 and not public_url:
-            raise Exception('ngrok failed to start')
-        yield public_url
-    finally:
-        process.terminate()
+    process = run_silent([ngrok_path, 'http', '9000'])
+    public_url = ngrok_public_url()
+    yield public_url
+    process.terminate()
 
 @pytest.yield_fixture(scope='session')
 def github_repo():
@@ -356,7 +348,7 @@ def new_pr(system, echoserver):
         json={'title': "PR for {0}".format(name), 'base': 'master', 'head': name}
     )
     pr_json = create_resp.json()
-    assert echoserver.get_data(proc)[0]['action'] == 'opened'
+    assert echoserver.get_data(proc)[0]['payload']['action'] == 'opened'
     yield pr_json
     print("Closing PR for {0} on GitHub  ...".format(name))
     close_resp = github.sync_request(
@@ -369,3 +361,4 @@ def new_pr(system, echoserver):
         json={'state': 'closed'},
     )
     assert close_resp.ok
+    new_pr.__call__ = new_pr

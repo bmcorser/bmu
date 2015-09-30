@@ -42,7 +42,12 @@ class ServeN(cli.Application):
                 if self._n == 0:
                     current_file = tempfile.NamedTemporaryFile(delete=False)
                     file_list.append(current_file)
-            current_file.write(request.data)
+            current_file.write(
+                json.dumps({
+                    'payload': request.get_json(),
+                    'headers': dict(request.headers)
+                })
+            )
             current_file.flush()
             current_file.close()
             CURRENT += 1
