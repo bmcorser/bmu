@@ -103,6 +103,8 @@ repos:
           - f
           - g
       - h
+mergers:
+ - {1}
 '''.format(user, repo))
     conf_yaml.file.flush()
     conf_yaml.close()
