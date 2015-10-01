@@ -29,6 +29,5 @@ def sync_request(method, url, use_gevent=False, **kwargs):
 
 
 for __method in ['post', 'get', 'delete']:
-    globals()[__method] = functools.partial(request, __method)
     globals()["sync_{0}".format(__method)] = functools.partial(sync_request,
                                                                __method)
