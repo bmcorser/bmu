@@ -1,15 +1,15 @@
-from setuptools import setup
+import setuptools
 
 VERSION = '0.0.1'
 
-setup(
+setuptools.setup(
     name='bmu',
     version=VERSION,
     description='GitHub/Buildbot integration service',
     author='@bmcorser',
     author_email='bmcorser@gmail.com',
     url='https://github.com/bmcorser/bmu',
-    packages=['bmu'],
+    packages=setuptools.find_packages(),
     install_requires=[
         'grequests',
         'klein',
