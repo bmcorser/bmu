@@ -33,8 +33,9 @@ class ServeN(cli.Application):
             tempfile.NamedTemporaryFile(delete=False) for n in range(self._n)
         ]
 
-        @app.route('/', methods=['POST'])
-        def dump_data():
+        @app.route('/', defaults={'path': ''}, methods=['POST'])
+        @app.route('/<path:path>', methods=['POST'])
+        def dump_data(path):
             global CURRENT
             try:
                 current_file = file_list[CURRENT]
@@ -45,7 +46,8 @@ class ServeN(cli.Application):
             current_file.write(
                 json.dumps({
                     'payload': request.get_json(),
-                    'headers': dict(request.headers)
+                    'headers': dict(request.headers),
+                    'path': path,
                 })
             )
             current_file.flush()

@@ -11,3 +11,5 @@ repos:
            - blue
          - functional
       - system
+mergers:
+  - bmcorser

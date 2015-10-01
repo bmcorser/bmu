@@ -1,7 +1,10 @@
+import json
+
 from klein import Klein
 from twisted.internet import reactor
 
-from . import event
+from .event import github as github_event
+from .event import buildbot as buildbot_event
 from . import validate
 from . import constants
 from . import label
@@ -13,7 +16,8 @@ app = Klein()
 @app.route('/github', methods=['POST'])
 def gh_events(request):
     event_name = request.getHeader(constants.GITHUB_API_HEADER_EVENT)
-    handler = event.github.handler.get(event_name)
+    print("Received `{0}` from GitHub".format(event_name))
+    handler = github_event.handler.get(event_name)
     if not handler:
         return "GitHub event `{0}` is not of interest.".format(event_name)
     payload = validate.payload(request)
@@ -24,11 +28,12 @@ def gh_events(request):
 
 def bb_handle(packet):
     'Handle Buildbot event'
-    handler = event.buildbot.handler.get(packet['event'])
+    event_name = packet['event']
+    print("Received `{0}` from Buildbot".format(event_name))
+    handler = buildbot_event.handler.get(event_name)
     if not handler:
-        return "Buildbot event `{0}` not of interest.".format(event_name)
-    payload = validate.payload(request)
-    handler_instance = handler(payload)
+        return "Buildbot event `{0}` is not of interest.".format(event_name)
+    handler_instance = handler(packet)
     reactor.callLater(1, handler_instance)
 
 

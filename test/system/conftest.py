@@ -290,7 +290,7 @@ def github_webhook(ngrok_server, bmu_conf, github_repo):
                 'issue_comment',
             ],
             'config': {
-                'url': ngrok_server,
+                'url': os.path.join(ngrok_server, 'github'),
                 'content_type': 'json',
                 'secret': config.github_webhook_secret,
             }

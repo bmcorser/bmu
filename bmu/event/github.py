@@ -1,5 +1,9 @@
-from . import github
-from . import config
+# coding: utf-8
+import re
+from .. import github
+from .. import config
+
+RE_CMD = re.compile("@{0} (?P<cmd>[\w]+) ?(?P<arg>[\w/]+)?".format(config.github_user))
 
 
 class BaseGitHubEvent(object):
@@ -14,58 +18,44 @@ class Ping(BaseGitHubEvent):
         return
 
 
-class PullRequest(BaseGitHubEvent):
-
-    build_actions = (
-        'opened',
-        'reopened',
-        'synchronize',
-    )
-
-    def __init__(self, payload):
-        pr_dict = payload['pull_request']
-        self.repo = payload['repository']['full_name']
-        self.merge_commit = pr_dict['merge_commit_sha']
-        self.branch = pr_dict['head']['ref']   # dont really care about branch
-        self.number = pr_dict['number']        # pr number is more important
-        self.branch = pr_dict['head']['sha1']  # but we need to pass status
-                                               # somewhere
-        self.pr_dict = pr_dict
-        super(PullRequest, self).__init__(payload)
-
-    def __call__(self):
-        if not self.pr_dict['mergeable']:
-            return
-        if self.payload['action'] not in self.build_actions:
-            return
-        labels = github.sync_get(self.pr_dict['issue_url']).json()['labels']
-        self.build(labels)
-
-    def build(self, labels):
-        print("Building against labels: {0}".format(labels))
-        # get master sha1
-
-
 class IssueComment(BaseGitHubEvent):
 
     def __call__(self):
-        # body = self.payload['comment']['body']
-        # commenter = self.payload['comment']['user']['login']
-        # if commenter == config.github_user: pass
-        # import ipdb;ipdb.set_trace()
+        if 'pull_request' not in self.payload['issue']:
+            # This isn’t a comment on a PR
+            return
+        number = self.payload['issue']['number']
+        commenter = self.payload['comment']['user']['login']
+        match = RE_CMD.match(self.payload['comment']['body'])
+        if not match:
+            return
+        cmd = match.group('cmd')
+        method = getattr(self, "_{0}".format(cmd), None)
+        if not method:
+            repo = self.payload['repository']['full_name']
+            comment_resp = github.sync_post(
+                "repos/{0}/issues/{1}/comments".format(repo, number),
+                json={'body': "@{0} :pear: `{1}`?".format(commenter, cmd)}
+            )
+            assert comment_resp.ok
+            return
+        method(commenter, match.group('arg'))
 
-        # admins
-        # "@{0} {1}".format(config.github_user, 'merge')
-        # build against all, get green then merge it
+    def _try(self, user, suite):
+        'Run the [requested] test suite'
+        if user not in config.developers and user not in config.mergers:
+            return
+        if not suite:
+            suite = 'bmu'
+        import ipdb;ipdb.set_trace()
 
-        # developers
-        # "@{0} {1}".format(config.github_user, 'try')
-        # build against labels
-        pass
+    def _merge(self, user, suite):
+        'Run all test suites, and merge if successful'
+        if user not in config.mergers:
+            return
 
 
 handler = {
-    'pull_request': PullRequest,
     'ping': Ping,
     'issue_comment': IssueComment,
 }
