@@ -1,7 +1,6 @@
 import functools
 import requests
 import grequests
-import treq
 import os
 from . import constants
 from . import config
@@ -18,15 +17,6 @@ def key(name):
         # import ipdb;ipdb.set_trace()
         return data[name]
     return get
-
-
-def request(method, url, **kwargs):
-    'Close a treq request with configured authentication'
-    if not url.startswith('https://'):
-        url = os.path.join(constants.GITHUB_API, url)
-    auth_tuple = (config.github_user, config.github_token)
-    fn = getattr(treq, method)
-    return fn(url.encode('utf-8'), auth=auth_tuple, **kwargs).addCallback(call_json)
 
 
 def sync_request(method, url, use_gevent=False, **kwargs):
