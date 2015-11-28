@@ -1,0 +1,41 @@
+2015-11-28 15:39:06+0000 [-] Log opened.
+2015-11-28 15:39:06+0000 [-] twistd 15.4.0 (/Users/ben/.pyenv/versions/bmu/bin/python2.7 2.7.10) starting up.
+2015-11-28 15:39:06+0000 [-] reactor class: twisted.internet.selectreactor.SelectReactor.
+2015-11-28 15:39:06+0000 [-] Starting BuildSlave -- version: 0.8.12
+2015-11-28 15:39:06+0000 [-] recording hostname in twistd.hostname
+2015-11-28 15:39:06+0000 [-] Starting factory <buildslave.bot.BotFactory instance at 0x10b44f2d8>
+2015-11-28 15:39:06+0000 [-] Connecting to localhost:9989
+2015-11-28 15:39:06+0000 [Uninitialized] Connection to localhost:9989 failed: Connection Refused
+2015-11-28 15:39:06+0000 [Uninitialized] <twisted.internet.tcp.Connector instance at 0x10b44f5f0> will retry in 2 seconds
+2015-11-28 15:39:06+0000 [-] Stopping factory <buildslave.bot.BotFactory instance at 0x10b44f2d8>
+2015-11-28 15:39:08+0000 [-] Starting factory <buildslave.bot.BotFactory instance at 0x10b44f2d8>
+2015-11-28 15:39:08+0000 [-] Connecting to localhost:9989
+2015-11-28 15:39:08+0000 [Uninitialized] Connection to localhost:9989 failed: Connection Refused
+2015-11-28 15:39:08+0000 [Uninitialized] <twisted.internet.tcp.Connector instance at 0x10b44f5f0> will retry in 6 seconds
+2015-11-28 15:39:08+0000 [-] Stopping factory <buildslave.bot.BotFactory instance at 0x10b44f2d8>
+2015-11-28 15:39:15+0000 [-] Starting factory <buildslave.bot.BotFactory instance at 0x10b44f2d8>
+2015-11-28 15:39:15+0000 [-] Connecting to localhost:9989
+2015-11-28 15:39:15+0000 [Uninitialized] Connection to localhost:9989 failed: Connection Refused
+2015-11-28 15:39:15+0000 [Uninitialized] <twisted.internet.tcp.Connector instance at 0x10b44f5f0> will retry in 20 seconds
+2015-11-28 15:39:15+0000 [-] Stopping factory <buildslave.bot.BotFactory instance at 0x10b44f2d8>
+2015-11-28 15:39:35+0000 [-] Starting factory <buildslave.bot.BotFactory instance at 0x10b44f2d8>
+2015-11-28 15:39:35+0000 [-] Connecting to localhost:9989
+2015-11-28 15:39:35+0000 [Uninitialized] Connection to localhost:9989 failed: Connection Refused
+2015-11-28 15:39:35+0000 [Uninitialized] <twisted.internet.tcp.Connector instance at 0x10b44f5f0> will retry in 47 seconds
+2015-11-28 15:39:35+0000 [-] Stopping factory <buildslave.bot.BotFactory instance at 0x10b44f2d8>
+2015-11-28 15:40:23+0000 [-] Starting factory <buildslave.bot.BotFactory instance at 0x10b44f2d8>
+2015-11-28 15:40:23+0000 [-] Connecting to localhost:9989
+2015-11-28 15:40:23+0000 [Uninitialized] Connection to localhost:9989 failed: Connection Refused
+2015-11-28 15:40:23+0000 [Uninitialized] <twisted.internet.tcp.Connector instance at 0x10b44f5f0> will retry in 119 seconds
+2015-11-28 15:40:23+0000 [-] Stopping factory <buildslave.bot.BotFactory instance at 0x10b44f2d8>
+2015-11-28 15:42:23+0000 [-] Starting factory <buildslave.bot.BotFactory instance at 0x10b44f2d8>
+2015-11-28 15:42:23+0000 [-] Connecting to localhost:9989
+2015-11-28 15:42:23+0000 [Uninitialized] Connection to localhost:9989 failed: Connection Refused
+2015-11-28 15:42:23+0000 [Uninitialized] <twisted.internet.tcp.Connector instance at 0x10b44f5f0> will retry in 316 seconds
+2015-11-28 15:42:23+0000 [-] Stopping factory <buildslave.bot.BotFactory instance at 0x10b44f2d8>
+2015-11-28 15:44:23+0000 [-] connection attempt timed out (is the port number correct?)
+2015-11-28 15:47:39+0000 [-] Starting factory <buildslave.bot.BotFactory instance at 0x10b44f2d8>
+2015-11-28 15:47:39+0000 [-] Connecting to localhost:9989
+2015-11-28 15:47:39+0000 [Uninitialized] Connection to localhost:9989 failed: Connection Refused
+2015-11-28 15:47:39+0000 [Uninitialized] <twisted.internet.tcp.Connector instance at 0x10b44f5f0> will retry in 328 seconds
+2015-11-28 15:47:39+0000 [-] Stopping factory <buildslave.bot.BotFactory instance at 0x10b44f2d8>
