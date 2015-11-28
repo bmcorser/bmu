@@ -119,7 +119,6 @@ def bmu_server():
         process = run_silent(['python', '-m', 'bmu'] + cli_args)
         return process
 
-
 @pytest.fixture
 def echoserver(ngrok_server):
 
@@ -300,6 +299,15 @@ def github_webhook(ngrok_server, bmu_conf, github_repo):
     )
     assert create_resp.ok
     return create_resp.json()
+
+
+@pytest.fixture
+def buildbot_instance(github_repo):
+    '''
+    buildbot start master && buildslave start slave
+    '''
+    pass
+
 
 @pytest.yield_fixture
 def system(ngrok_server, bmu_server, github_repo, github_webhook, ssh_wrapper):

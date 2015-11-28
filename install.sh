@@ -4,7 +4,14 @@ if [ -f test/system/ngrok ]; then
 else
     echo "installing ngrok"
     pushd test/system
-    wget https://dl.ngrok.com/ngrok_2.0.19_linux_amd64.zip -O ngrok.zip
+    platform=$(uname -s)
+    if [ $platform == "Darwin" ]; then
+        wget https://dl.ngrok.com/ngrok_2.0.19_darwin_amd64.zip -O ngrok.zip
+    elif [ $platform == "Linux" ]; then
+        wget https://dl.ngrok.com/ngrok_2.0.19_linux_amd64.zip -O ngrok.zip
+    else
+        exit 'Unsupported platform'
+    fi
     unzip ngrok.zip
     rm -v ngrok.zip
     popd
