@@ -58,4 +58,3 @@ def init():
                     get_label_names(config.namespace, label_tree)
                 )
             delete_create(user_repo, label_set)
-    # import ipdb;ipdb.set_trace()

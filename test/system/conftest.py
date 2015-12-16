@@ -104,7 +104,9 @@ repos:
           - g
       - h
 mergers:
- - {1}
+ - {0}
+developers:
+ - {0}
 '''.format(user, repo))
     conf_yaml.file.flush()
     conf_yaml.close()
@@ -118,6 +120,8 @@ def bmu_server():
     def start_server(cli_args):
         process = run_silent(['python', '-m', 'bmu'] + cli_args)
         return process
+    return start_server
+
 
 @pytest.fixture
 def echoserver(ngrok_server):
@@ -310,7 +314,7 @@ def buildbot_instance(github_repo):
 
 
 @pytest.yield_fixture
-def system(ngrok_server, bmu_server, github_repo, github_webhook, ssh_wrapper):
+def system(ngrok_server, bmu_server, github_repo, bmu_conf, github_webhook, ssh_wrapper):
     local_repo = create_temp_repo()
     git_run(local_repo.root, [
         'remote',
@@ -327,7 +331,8 @@ def system(ngrok_server, bmu_server, github_repo, github_webhook, ssh_wrapper):
     )
     system_dict = {
         'public_url': ngrok_server,
-        'start_bmu': bmu_server,
+        'bmu_conf': bmu_conf,
+        'start_bmu': lambda: bmu_server(['-c', bmu_conf]),
         'github_repo': github_repo,
         'github_webhook': github_webhook,
         'local_repo': local_repo,

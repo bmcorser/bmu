@@ -5,6 +5,8 @@ from . import config
 def send(pr):
     'Arrange a PullRequest object into buildbot change format and send it'
     config.buildbot_url
+
+
 def trigger(changes, properties):
     'Send changes and properties to Buildbot'
     number = pr_dict['number']

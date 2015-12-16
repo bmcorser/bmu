@@ -1,2 +1,4 @@
 pytest
 flask
+buildbot
+buildbot-slave

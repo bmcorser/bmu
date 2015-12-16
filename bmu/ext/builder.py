@@ -37,9 +37,9 @@ class GitHubTrigger(steps.Trigger):
         yield steps.Trigger.start(self)
 
 
-def bmu_builder(slavenames, defaultSchedulers):
+def bmu_builder(name, slavenames, defaultSchedulers):
     bmu_f = util.BuildFactory()
     bmu_f.addStep(GitHubTrigger(defaultSchedulers=defaultSchedulers))
-    return util.BuilderConfig(name='bmu-github-trigger',
+    return util.BuilderConfig(name=name,
                               slavenames=slavenames,
                               factory=bmu_f)
