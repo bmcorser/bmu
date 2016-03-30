@@ -283,7 +283,7 @@ def create_temp_repo():
     return collections.namedtuple('repo', repo_dict.keys())(**repo_dict)
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def github_webhook(ngrok_server, bmu_conf, github_repo):
     print("Creating GitHub webhook for {0} ...".format(github_repo['name']))
     create_resp = github.sync_post(
