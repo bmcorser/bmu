@@ -6,9 +6,9 @@ else
     pushd test/system
     platform=$(uname -s)
     if [ $platform == "Darwin" ]; then
-        wget https://dl.ngrok.com/ngrok_2.0.19_darwin_amd64.zip -O ngrok.zip
+        wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-darwin-amd64.zip -O ngrok.zip
     elif [ $platform == "Linux" ]; then
-        wget https://dl.ngrok.com/ngrok_2.0.19_linux_amd64.zip -O ngrok.zip
+        wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip -O ngrok.zip
     else
         exit 'Unsupported platform'
     fi

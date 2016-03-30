@@ -16,9 +16,6 @@ def tmp_config(tmp):
 @pytest.fixture(scope='function')
 def config_values():
     return {
-        'github_user': 'a',
-        'github_token': 'b',
-        'github_webhook_secret': 'c',
         'repos': ['d', 'e', 'f'],
         'developers': ['g', 'h', 'i'],
         'mergers': ['j'],
@@ -64,7 +61,6 @@ def test_config_set_from_yaml(tmp_config, config_values):
 
 
 def test_config_set_from_env(tmp_config, config_values):
-    del config_values['github_user']
     os.environ['BMU_GITHUB_USER'] = 'x'
     with open(tmp_config, 'w') as fh:
         fh.write(yaml.dump(config_values))
