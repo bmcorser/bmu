@@ -1,0 +1,213 @@
+2016-03-31 09:23:02+0100 [-] Log opened.
+2016-03-31 09:23:02+0100 [-] twistd 15.1.0 (/home/ben/.pyenv/versions/buildbot/bin/python 2.7.8) starting up.
+2016-03-31 09:23:02+0100 [-] reactor class: twisted.internet.epollreactor.EPollReactor.
+2016-03-31 09:23:02+0100 [-] Starting BuildMaster -- buildbot.version: 0.8.12
+2016-03-31 09:23:02+0100 [-] Loading configuration from '/home/ben/work/deskgen/bmu/test/system/config/buildbot/master/master.cfg'
+2016-03-31 09:23:02+0100 [-] error while parsing config file:
+	Traceback (most recent call last):
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/Twisted-15.1.0-py2.7-linux-x86_64.egg/twisted/internet/defer.py", line 578, in _runCallbacks
+	    current.result = callback(current.result, *args, **kw)
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/Twisted-15.1.0-py2.7-linux-x86_64.egg/twisted/internet/defer.py", line 1163, in gotResult
+	    _inlineCallbacks(r, g, deferred)
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/Twisted-15.1.0-py2.7-linux-x86_64.egg/twisted/internet/defer.py", line 1107, in _inlineCallbacks
+	    result = g.send(result)
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/buildbot/master.py", line 189, in startService
+	    self.configFileName)
+	--- <exception caught here> ---
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/buildbot/config.py", line 156, in loadConfig
+	    exec f in localDict
+	  File "/home/ben/work/deskgen/bmu/test/system/config/buildbot/master/master.cfg", line 9, in <module>
+	    inject_bmu(buildbot)
+	  File "/home/ben/work/deskgen/bmu/bmu/ext/builder.py", line 14, in inject_bmu
+	    setattr(buildbot_module.status.web.hooks, 'bmu', sys.modules[__name__])
+	exceptions.AttributeError: 'module' object has no attribute 'hooks'
+	
+2016-03-31 09:23:02+0100 [-] Configuration Errors:
+2016-03-31 09:23:02+0100 [-]   error while parsing config file: 'module' object has no attribute 'hooks' (traceback in logfile)
+2016-03-31 09:23:02+0100 [-] Halting master.
+2016-03-31 09:23:02+0100 [-] Main loop terminated.
+2016-03-31 09:23:02+0100 [-] Server Shut Down.
+2016-03-31 09:23:31+0100 [-] Log opened.
+2016-03-31 09:23:31+0100 [-] twistd 15.1.0 (/home/ben/.pyenv/versions/buildbot/bin/python 2.7.8) starting up.
+2016-03-31 09:23:31+0100 [-] reactor class: twisted.internet.epollreactor.EPollReactor.
+2016-03-31 09:23:31+0100 [-] Starting BuildMaster -- buildbot.version: 0.8.12
+2016-03-31 09:23:31+0100 [-] Loading configuration from '/home/ben/work/deskgen/bmu/test/system/config/buildbot/master/master.cfg'
+2016-03-31 09:23:31+0100 [-] error while parsing config file:
+	Traceback (most recent call last):
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/Twisted-15.1.0-py2.7-linux-x86_64.egg/twisted/internet/defer.py", line 578, in _runCallbacks
+	    current.result = callback(current.result, *args, **kw)
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/Twisted-15.1.0-py2.7-linux-x86_64.egg/twisted/internet/defer.py", line 1163, in gotResult
+	    _inlineCallbacks(r, g, deferred)
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/Twisted-15.1.0-py2.7-linux-x86_64.egg/twisted/internet/defer.py", line 1107, in _inlineCallbacks
+	    result = g.send(result)
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/buildbot/master.py", line 189, in startService
+	    self.configFileName)
+	--- <exception caught here> ---
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/buildbot/config.py", line 156, in loadConfig
+	    exec f in localDict
+	  File "/home/ben/work/deskgen/bmu/test/system/config/buildbot/master/master.cfg", line 9, in <module>
+	    inject_bmu(buildbot)
+	  File "/home/ben/work/deskgen/bmu/bmu/ext/builder.py", line 15, in inject_bmu
+	    setattr(buildbot_module.status.web.hooks, 'bmu', sys.modules[__name__])
+	  File "/home/ben/work/deskgen/bmu/bmu/ext/builder.py", line 15, in inject_bmu
+	    setattr(buildbot_module.status.web.hooks, 'bmu', sys.modules[__name__])
+	  File "/home/ben/.pyenv/versions/2.7.8/lib/python2.7/bdb.py", line 49, in trace_dispatch
+	    return self.dispatch_line(frame)
+	  File "/home/ben/.pyenv/versions/2.7.8/lib/python2.7/bdb.py", line 68, in dispatch_line
+	    if self.quitting: raise BdbQuit
+	bdb.BdbQuit: 
+	
+2016-03-31 09:23:31+0100 [-] Configuration Errors:
+2016-03-31 09:23:31+0100 [-]   error while parsing config file:  (traceback in logfile)
+2016-03-31 09:23:31+0100 [-] Halting master.
+2016-03-31 09:23:31+0100 [-] Main loop terminated.
+2016-03-31 09:23:31+0100 [-] Server Shut Down.
+2016-03-31 09:28:45+0100 [-] Log opened.
+2016-03-31 09:28:45+0100 [-] twistd 15.1.0 (/home/ben/.pyenv/versions/buildbot/bin/python 2.7.8) starting up.
+2016-03-31 09:28:45+0100 [-] reactor class: twisted.internet.epollreactor.EPollReactor.
+2016-03-31 09:28:45+0100 [-] Starting BuildMaster -- buildbot.version: 0.8.12
+2016-03-31 09:28:45+0100 [-] Loading configuration from '/home/ben/work/deskgen/bmu/test/system/config/buildbot/master/master.cfg'
+2016-03-31 09:28:46+0100 [-] error while parsing config file:
+	Traceback (most recent call last):
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/Twisted-15.1.0-py2.7-linux-x86_64.egg/twisted/internet/defer.py", line 578, in _runCallbacks
+	    current.result = callback(current.result, *args, **kw)
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/Twisted-15.1.0-py2.7-linux-x86_64.egg/twisted/internet/defer.py", line 1163, in gotResult
+	    _inlineCallbacks(r, g, deferred)
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/Twisted-15.1.0-py2.7-linux-x86_64.egg/twisted/internet/defer.py", line 1107, in _inlineCallbacks
+	    result = g.send(result)
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/buildbot/master.py", line 189, in startService
+	    self.configFileName)
+	--- <exception caught here> ---
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/buildbot/config.py", line 156, in loadConfig
+	    exec f in localDict
+	  File "/home/ben/work/deskgen/bmu/test/system/config/buildbot/master/master.cfg", line 13, in <module>
+	    TEST_REPO_URL = "git://github.com/{0}".format(os.environ['BMU_TEST_REPO'])
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/UserDict.py", line 23, in __getitem__
+	    raise KeyError(key)
+	exceptions.KeyError: 'BMU_TEST_REPO'
+	
+2016-03-31 09:28:46+0100 [-] Configuration Errors:
+2016-03-31 09:28:46+0100 [-]   error while parsing config file: 'BMU_TEST_REPO' (traceback in logfile)
+2016-03-31 09:28:46+0100 [-] Halting master.
+2016-03-31 09:28:46+0100 [-] Main loop terminated.
+2016-03-31 09:28:46+0100 [-] Server Shut Down.
+2016-03-31 09:31:29+0100 [-] Log opened.
+2016-03-31 09:31:29+0100 [-] twistd 15.1.0 (/home/ben/.pyenv/versions/buildbot/bin/python 2.7.8) starting up.
+2016-03-31 09:31:29+0100 [-] reactor class: twisted.internet.epollreactor.EPollReactor.
+2016-03-31 09:31:29+0100 [-] Starting BuildMaster -- buildbot.version: 0.8.12
+2016-03-31 09:31:29+0100 [-] Loading configuration from '/home/ben/work/deskgen/bmu/test/system/config/buildbot/master/master.cfg'
+2016-03-31 09:31:29+0100 [-] Configuration Errors:
+2016-03-31 09:31:29+0100 [-]   Unknown builder 'pyflakes' in scheduler 'schedule-all'
+2016-03-31 09:31:29+0100 [-] Halting master.
+2016-03-31 09:31:29+0100 [-] Main loop terminated.
+2016-03-31 09:31:29+0100 [-] Server Shut Down.
+2016-03-31 09:40:36+0100 [-] Log opened.
+2016-03-31 09:40:36+0100 [-] twistd 15.1.0 (/home/ben/.pyenv/versions/buildbot/bin/python 2.7.8) starting up.
+2016-03-31 09:40:36+0100 [-] reactor class: twisted.internet.epollreactor.EPollReactor.
+2016-03-31 09:40:36+0100 [-] Starting BuildMaster -- buildbot.version: 0.8.12
+2016-03-31 09:40:36+0100 [-] Loading configuration from '/home/ben/work/deskgen/bmu/test/system/config/buildbot/queen/master.cfg'
+2016-03-31 09:40:36+0100 [-] Configuration Errors:
+2016-03-31 09:40:36+0100 [-]   Unknown builder 'pyflakes' in scheduler 'schedule-all'
+2016-03-31 09:40:36+0100 [-] Halting master.
+2016-03-31 09:40:36+0100 [-] Main loop terminated.
+2016-03-31 09:40:36+0100 [-] Server Shut Down.
+2016-03-31 09:41:39+0100 [-] Log opened.
+2016-03-31 09:41:39+0100 [-] twistd 15.1.0 (/home/ben/.pyenv/versions/buildbot/bin/python 2.7.8) starting up.
+2016-03-31 09:41:39+0100 [-] reactor class: twisted.internet.epollreactor.EPollReactor.
+2016-03-31 09:41:39+0100 [-] Starting BuildMaster -- buildbot.version: 0.8.12
+2016-03-31 09:41:39+0100 [-] Loading configuration from '/home/ben/work/deskgen/bmu/test/system/config/buildbot/queen/master.cfg'
+2016-03-31 09:41:39+0100 [-] Configuration Errors:
+2016-03-31 09:41:39+0100 [-]   builder(s) pytest, bmu have no schedulers to drive them
+2016-03-31 09:41:39+0100 [-] Halting master.
+2016-03-31 09:41:39+0100 [-] Main loop terminated.
+2016-03-31 09:41:39+0100 [-] Server Shut Down.
+2016-03-31 09:42:24+0100 [-] Log opened.
+2016-03-31 09:42:24+0100 [-] twistd 15.1.0 (/home/ben/.pyenv/versions/buildbot/bin/python 2.7.8) starting up.
+2016-03-31 09:42:24+0100 [-] reactor class: twisted.internet.epollreactor.EPollReactor.
+2016-03-31 09:42:24+0100 [-] Starting BuildMaster -- buildbot.version: 0.8.12
+2016-03-31 09:42:24+0100 [-] Loading configuration from '/home/ben/work/deskgen/bmu/test/system/config/buildbot/queen/master.cfg'
+2016-03-31 09:42:24+0100 [-] Configuration Errors:
+2016-03-31 09:42:24+0100 [-]   Unknown builder 'pyflakes' in scheduler 'schedule-all'
+2016-03-31 09:42:24+0100 [-] Halting master.
+2016-03-31 09:42:24+0100 [-] Main loop terminated.
+2016-03-31 09:42:24+0100 [-] Server Shut Down.
+2016-03-31 10:00:27+0100 [-] Log opened.
+2016-03-31 10:00:27+0100 [-] twistd 15.1.0 (/home/ben/.pyenv/versions/buildbot/bin/python 2.7.8) starting up.
+2016-03-31 10:00:27+0100 [-] reactor class: twisted.internet.epollreactor.EPollReactor.
+2016-03-31 10:00:27+0100 [-] Starting BuildMaster -- buildbot.version: 0.8.12
+2016-03-31 10:00:27+0100 [-] Loading configuration from '/home/ben/work/deskgen/bmu/test/system/config/buildbot/queen/master.cfg'
+2016-03-31 10:00:27+0100 [-] Configuration Errors:
+2016-03-31 10:00:27+0100 [-]   builder(s) bmu have no schedulers to drive them
+2016-03-31 10:00:27+0100 [-] Halting master.
+2016-03-31 10:00:27+0100 [-] Main loop terminated.
+2016-03-31 10:00:27+0100 [-] Server Shut Down.
+2016-03-31 10:01:01+0100 [-] Log opened.
+2016-03-31 10:01:01+0100 [-] twistd 15.1.0 (/home/ben/.pyenv/versions/buildbot/bin/python 2.7.8) starting up.
+2016-03-31 10:01:01+0100 [-] reactor class: twisted.internet.epollreactor.EPollReactor.
+2016-03-31 10:01:01+0100 [-] Starting BuildMaster -- buildbot.version: 0.8.12
+2016-03-31 10:01:01+0100 [-] Loading configuration from '/home/ben/work/deskgen/bmu/test/system/config/buildbot/queen/master.cfg'
+2016-03-31 10:01:01+0100 [-] error while parsing config file:
+	Traceback (most recent call last):
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/Twisted-15.1.0-py2.7-linux-x86_64.egg/twisted/internet/defer.py", line 578, in _runCallbacks
+	    current.result = callback(current.result, *args, **kw)
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/Twisted-15.1.0-py2.7-linux-x86_64.egg/twisted/internet/defer.py", line 1163, in gotResult
+	    _inlineCallbacks(r, g, deferred)
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/Twisted-15.1.0-py2.7-linux-x86_64.egg/twisted/internet/defer.py", line 1107, in _inlineCallbacks
+	    result = g.send(result)
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/buildbot/master.py", line 189, in startService
+	    self.configFileName)
+	--- <exception caught here> ---
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/buildbot/config.py", line 156, in loadConfig
+	    exec f in localDict
+	  File "/home/ben/work/deskgen/bmu/test/system/config/buildbot/queen/master.cfg", line 45, in <module>
+	    builderNames=BUILDERS + ['bmu'],
+	exceptions.TypeError: can only concatenate tuple (not "list") to tuple
+	
+2016-03-31 10:01:01+0100 [-] Configuration Errors:
+2016-03-31 10:01:01+0100 [-]   error while parsing config file: can only concatenate tuple (not "list") to tuple (traceback in logfile)
+2016-03-31 10:01:01+0100 [-] Halting master.
+2016-03-31 10:01:01+0100 [-] Main loop terminated.
+2016-03-31 10:01:01+0100 [-] Server Shut Down.
+2016-03-31 10:01:10+0100 [-] Log opened.
+2016-03-31 10:01:10+0100 [-] twistd 15.1.0 (/home/ben/.pyenv/versions/buildbot/bin/python 2.7.8) starting up.
+2016-03-31 10:01:10+0100 [-] reactor class: twisted.internet.epollreactor.EPollReactor.
+2016-03-31 10:01:10+0100 [-] Starting BuildMaster -- buildbot.version: 0.8.12
+2016-03-31 10:01:10+0100 [-] Loading configuration from '/home/ben/work/deskgen/bmu/test/system/config/buildbot/queen/master.cfg'
+2016-03-31 10:01:10+0100 [-] error while parsing config file:
+	Traceback (most recent call last):
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/Twisted-15.1.0-py2.7-linux-x86_64.egg/twisted/internet/defer.py", line 578, in _runCallbacks
+	    current.result = callback(current.result, *args, **kw)
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/Twisted-15.1.0-py2.7-linux-x86_64.egg/twisted/internet/defer.py", line 1163, in gotResult
+	    _inlineCallbacks(r, g, deferred)
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/Twisted-15.1.0-py2.7-linux-x86_64.egg/twisted/internet/defer.py", line 1107, in _inlineCallbacks
+	    result = g.send(result)
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/buildbot/master.py", line 189, in startService
+	    self.configFileName)
+	--- <exception caught here> ---
+	  File "/home/ben/.pyenv/versions/buildbot/lib/python2.7/site-packages/buildbot/config.py", line 156, in loadConfig
+	    exec f in localDict
+	  File "/home/ben/work/deskgen/bmu/test/system/config/buildbot/queen/master.cfg", line 45, in <module>
+	    builderNames=BUILDERS + ('bmu'),
+	exceptions.TypeError: can only concatenate tuple (not "str") to tuple
+	
+2016-03-31 10:01:10+0100 [-] Configuration Errors:
+2016-03-31 10:01:10+0100 [-]   error while parsing config file: can only concatenate tuple (not "str") to tuple (traceback in logfile)
+2016-03-31 10:01:10+0100 [-] Halting master.
+2016-03-31 10:01:10+0100 [-] Main loop terminated.
+2016-03-31 10:01:10+0100 [-] Server Shut Down.
+2016-03-31 10:01:19+0100 [-] Log opened.
+2016-03-31 10:01:19+0100 [-] twistd 15.1.0 (/home/ben/.pyenv/versions/buildbot/bin/python 2.7.8) starting up.
+2016-03-31 10:01:19+0100 [-] reactor class: twisted.internet.epollreactor.EPollReactor.
+2016-03-31 10:01:19+0100 [-] Starting BuildMaster -- buildbot.version: 0.8.12
+2016-03-31 10:01:19+0100 [-] Loading configuration from '/home/ben/work/deskgen/bmu/test/system/config/buildbot/queen/master.cfg'
+2016-03-31 10:01:19+0100 [-] Setting up database with URL 'sqlite:///state.sqlite'
+2016-03-31 10:01:19+0100 [-] setting database journal mode to 'wal'
+2016-03-31 10:01:19+0100 [-] The Buildmaster database needs to be upgraded before this version of
+2016-03-31 10:01:19+0100 [-] buildbot can run.  Use the following command-line
+2016-03-31 10:01:19+0100 [-] 
+2016-03-31 10:01:19+0100 [-]     buildbot upgrade-master path/to/master
+2016-03-31 10:01:19+0100 [-] 
+2016-03-31 10:01:19+0100 [-] to upgrade the database, and try starting the buildmaster again.  You may
+2016-03-31 10:01:19+0100 [-] want to make a backup of your buildmaster before doing so.
+2016-03-31 10:01:19+0100 [-] Main loop terminated.
+2016-03-31 10:01:19+0100 [-] Server Shut Down.

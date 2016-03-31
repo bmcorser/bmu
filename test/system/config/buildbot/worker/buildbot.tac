@@ -1,4 +1,3 @@
-
 import os
 
 from buildslave.bot import BuildSlave
@@ -28,7 +27,7 @@ except ImportError:
 
 buildmaster_host = 'localhost'
 port = 9989
-slavename = 'example-slave'
+slavename = 'worker'
 passwd = 'pass'
 keepalive = 600
 usepty = 0
