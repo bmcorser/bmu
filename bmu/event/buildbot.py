@@ -27,20 +27,16 @@ class BuildStarted(BaseBuildbotEvent):
 
 class BuildFinished(BaseBuildbotEvent):
 
-    def post_status(self, context, status):
+    def post_status(self, context, status, link=None):
+        payload = {'context': context, 'state': status}
+        if link:
+            payload.update({'target_url': link})
         return github.sync_post(
             "repos/{0}/statuses/{1}".format(self.repo, self.head_commit),
-            json={
-                'context': context,
-                'state': status,
-            }
+            json=payload
         )
 
     def __call__(self):
-        # Bit more needed here
-        # Need to do something around Redis to keep a track of what builds
-        # belong to a particular label, then only say finished 'to' that
-        # label 
         props = {k: v for k, v, s in self.payload['build']['properties']}
         self.suite = props['suite']
         merge_commit = props['revision']
@@ -48,13 +44,23 @@ class BuildFinished(BaseBuildbotEvent):
         self.builder = self.payload['build']['builderName']
         self.repo = props['repo']
 
-        if self.payload['build']['text'] == ['failed']:
+        build_text = self.payload['build']['text']
+        if 'failed' in build_text:
+            for step in self.payload['build']['steps']:
+                if 'failed' in step['text']:
+                    link = None
+                    try:
+                        link = step['logs'][0][1]
+                    except:
+                        pass  # might be no link
+                    self.post_status(self.builder, 'failure', link)
+
             BUILDS[merge_commit][self.suite][self.builder] = False
-            self.post_status(props['suite'], 'failure')
-            print("Build failed for {0}".format(props['revision']))
+            print("Build of {0} failed for {1}".format(self.builder, merge_commit))
         else:
             BUILDS[merge_commit][self.suite][self.builder] = True
-            print("Build might have suceeded for {0}".format(props['revision']))
+            print("Build of {0} might have suceeded for {1}".format(self.builder, merge_commit))
+        print(build_text)
 
         def is_done(result):
             return result in (True, False)

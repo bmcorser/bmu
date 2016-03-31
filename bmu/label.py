@@ -1,7 +1,6 @@
 import functools
 import operator
 import grequests
-import requests
 from . import config
 from . import github
 
@@ -19,11 +18,6 @@ def get_label_names(namespace, label_tree):
     for tree in descendants:
         names.update(get_label_names(prefix, tree))
     return names
-
-
-def get_builder_names():
-    pass
-
 
 
 def get_existing_labels(user_repo):
