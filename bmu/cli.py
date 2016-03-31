@@ -1,5 +1,4 @@
 from plumbum import cli
-from . import server
 from . import config
 
 
@@ -17,4 +16,5 @@ class Cli(cli.Application):
 
     def main(self):
         config.populate(self._conf_path)
+        from . import server  # make sure configurtion is all done
         server.main(self._port)

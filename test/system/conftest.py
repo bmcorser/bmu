@@ -107,6 +107,9 @@ mergers:
  - {0}
 developers:
  - {0}
+buildbot_auth:
+ - bmu
+ - bmu
 '''.format(user, repo))
     conf_yaml.file.flush()
     conf_yaml.close()
