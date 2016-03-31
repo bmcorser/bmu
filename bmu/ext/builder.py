@@ -10,7 +10,7 @@ def getChanges(request, options=None):
     return bmu_payload, 'git'
 
 
-def inject(buildbot_module):
+def inject_bmu(buildbot_module):
     setattr(buildbot_module.status.web.hooks, 'bmu', sys.modules[__name__])
 
 

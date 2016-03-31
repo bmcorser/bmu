@@ -2,7 +2,7 @@ from bmu import github
 from bmu import label
 
 
-def test_event(system, new_pr, bmu_conf, echoserver):
+def test_labels_are_created_by_bmu(system, new_pr, bmu_conf, echoserver):
     label.init()
     repo_labels = sorted(label.get_existing_labels(system.github_repo['full_name']))
     proc = echoserver.start(2)
