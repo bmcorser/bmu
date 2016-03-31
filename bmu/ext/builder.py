@@ -10,8 +10,8 @@ def getChanges(request, options=None):
     return bmu_payload, 'git'
 
 
-def inject_bmu(buildbot_module):
-    setattr(buildbot_module.status.web.hooks, 'bmu', sys.modules[__name__])
+def inject_bmu(buildbot_hooks_module):
+    setattr(buildbot_hooks_module, 'bmu', sys.modules[__name__])
 
 
 class GitHubTrigger(steps.Trigger):

@@ -32,17 +32,16 @@ def bb_handle(packet):
     print("Received `{0}` from Buildbot".format(event_name))
     handler = buildbot_event.handler.get(event_name)
     if not handler:
-        return "Buildbot event `{0}` is not of interest.".format(event_name)
-    handler_instance = handler(packet)
+        print("Buildbot event `{0}` is not of interest.".format(event_name))
+        return
+    handler_instance = handler(packet['payload'])
     reactor.callLater(1, handler_instance)
 
 
 @app.route('/buildbot', methods=['POST'])
 def bb_events(request):
-    packets = json.loads(request.args['packets'])
-    if isinstance(packets, list):
-        for packet in packets:
-            bb_handle(packet)
+    for packets in request.args['packets']:
+        map(bb_handle, json.loads(packets))
     return 'Thanks for that'
 
 
