@@ -1,15 +1,66 @@
 # coding: utf-8
+import functools
 import re
+import operator
+import requests
+import grequests
+import urlparse
+import urllib
 from .. import github
 from .. import config
 
 RE_CMD = re.compile("@{0} (?P<cmd>[\w]+) ?(?P<arg>[\w/, ]+)?".format(config.github_user))
+
+BUILDS = {}  # One day, redis here
+
+
+def bb_url(path):
+    return urlparse.urljoin(config.buildbot_url, path)
+
+
+def get_bb_builder_names():
+    resp = requests.get(bb_url('json/builders'))
+    return resp.json().keys()
+
+
+def labels_to_suites(labels):
+    suites = filter(lambda label: label.startswith(config.namespace), labels)
+    if not suites:
+        return ['*']
+    strip_ns = lambda label: label.replace("{0}/".format(config.namespace), '')
+    return map(strip_ns, suites)
+
+
+def suite_to_builders(suite, builders):
+    def root_of(builder):
+        return builder.startswith(suite)
+    return filter(root_of, builders)
+
 
 
 class BaseGitHubEvent(object):
 
     def __init__(self, payload):
         self.payload = payload
+
+    def start_builder(self, suite, name):
+        kwargs = {
+            'data': {
+                'forcescheduler': name,
+                'revision': self.merge_commit,
+                'property1_name': 'suite',
+                'property1_value': suite,
+                'property2_name': 'repo',
+                'property2_value': self.repo,
+                'property3_name': 'head_commit',
+                'property3_value': self.head_commit,
+                'branch': "refs/pull/{0}/merge".format(self.number),
+            },
+            'auth': tuple(config.buildbot_auth),
+        }
+        path = "builders/{0}/force".format(urllib.quote_plus(name))
+        return grequests.post(bb_url(path), **kwargs)
+
 
 
 class Ping(BaseGitHubEvent):
@@ -21,12 +72,17 @@ class Ping(BaseGitHubEvent):
 class IssueComment(BaseGitHubEvent):
 
     def __call__(self):
+        print('IssueComment')
         if 'pull_request' not in self.payload['issue']:
             # This isn’t a comment on a PR
             return
-        repo = self.payload['repository']['full_name']
-        number = self.payload['issue']['number']
-        commenter = self.payload['comment']['user']['login']
+        self.repo = self.payload['repository']['full_name']
+        self.number = self.payload['issue']['number']
+        self.user = self.payload['comment']['user']['login']
+        pr_url = "repos/{0}/pulls/{1}".format(self.repo, self.number)
+        pr_json = github.sync_get(pr_url).json()
+        self.merge_commit = pr_json['merge_commit_sha']
+        self.head_commit = pr_json['head']['sha']
         match = RE_CMD.match(self.payload['comment']['body'])
         if not match:
             return
@@ -34,24 +90,33 @@ class IssueComment(BaseGitHubEvent):
         method = getattr(self, "_{0}".format(cmd), None)
         if not method:
             comment_resp = github.sync_post(
-                "repos/{0}/issues/{1}/comments".format(repo, number),
-                json={'body': "@{0} :pear: `{1}`?".format(commenter, cmd)}
+                "repos/{0}/issues/{1}/comments".format(self.repo, self.number),
+                json={'body': "@{0} :pear: `{1}`?".format(self.user, cmd)}
             )
             assert comment_resp.ok
             return
-        method(repo, number, commenter, match.group('arg'))
+        method(match.group('arg'))
 
-    def _try(self, repo, number, user, suites):
-        'Run the [requested] test suite'
-        if not suites:
-            suites = [config.namespace]
-        suites = map(lambda string: string.strip(','), suites.split())
-        if user not in config.developers and user not in config.mergers:
-            return
+    def _try(self, suites):
+        'Run the [requested] test suite(s)'
+        if self.user not in config.developers and self.user not in config.mergers:
+            return  # maybe should talk bak you're not allowed
+        if not suites:  # refer to labels
+            suites = labels_to_suites(map(operator.itemgetter('name'), self.payload['issue']['labels']))
+        else:  # specific label requested
+            suites = labels_to_suites(map(lambda string: string.strip(','), suites.split()))
+        all_builders = get_bb_builder_names()
+        BUILDS[self.merge_commit] = {}
+        for suite in suites:
+            BUILDS[self.merge_commit][suite] = {}
+            builders = suite_to_builders(suite, all_builders)
+            for builder in builders:
+                BUILDS[self.merge_commit][suite][builder] = None
+            grequests.map(map(functools.partial(self.start_builder, suite), builders))
 
-    def _merge(self, user, suite):
+    def _merge(self, *args):
         'Run all test suites, and merge if successful'
-        if user not in config.mergers:
+        if self.user not in config.mergers:
             return
 
 
@@ -75,6 +140,7 @@ class PullRequest(BaseGitHubEvent):
         handler()
 
     def _labeled(self):
+        label = self.payload['label']
         print("{0} -> {1}".format(label['name']))
 
     def _unlabeled(self):
