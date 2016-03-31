@@ -12,6 +12,7 @@ test/system/ngrok
 pytestdebug.log
 
 # buildbot for tests
+test/system/config/buildbot/queen/master.cfg.sample
 test/system/config/buildbot/queen/state.sqlite
 test/system/config/buildbot/queen/twistd.log
 test/system/config/buildbot/queen/a_b/
