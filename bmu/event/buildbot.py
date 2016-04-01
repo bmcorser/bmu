@@ -57,9 +57,13 @@ class BuildFinished(BaseBuildbotEvent):
 
             BUILDS[merge_commit][self.suite][self.builder] = False
             print("Build of {0} failed for {1}".format(self.builder, merge_commit))
-        else:
+        elif 'success' in build_text:
             BUILDS[merge_commit][self.suite][self.builder] = True
-            print("Build of {0} might have suceeded for {1}".format(self.builder, merge_commit))
+            print("Build of {0} suceeded for {1}".format(self.builder, merge_commit))
+        else:
+            BUILDS[merge_commit][self.suite][self.builder] = False
+            self.post_status(self.builder, 'failure', '-'.join(build_text))
+            print("Build of {0} did something else for {1}".format(self.builder, merge_commit))
         print(build_text)
 
         def is_done(result):
@@ -71,10 +75,16 @@ class BuildFinished(BaseBuildbotEvent):
         suite_results = BUILDS[merge_commit][self.suite].values()
 
         if all(map(is_done, suite_results)):
+            # this suite is complete, so report on it and then drop the key
             if any(map(is_false, suite_results)):
                 self.post_status(self.suite, 'failure')
             else:
                 self.post_status(self.suite, 'success')
+            del BUILDS[merge_commit][self.suite]
+            # if there are no more suites left to run for this commit, drop it
+            if not BUILDS[merge_commit]:
+                del BUILDS[merge_commit]
+
 
 
 handler = {
