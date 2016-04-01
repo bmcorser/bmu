@@ -45,6 +45,16 @@ class BuildFinished(BaseBuildbotEvent):
         self.repo = props['repo']
 
         build_text = self.payload['build']['text']
+        
+        resp = github.sync_get(
+            "repos/{0}/commits/{1}/statuses".format(
+                self.repo, self.head_commit
+            )
+        )
+        existing_status = None
+        for status in resp.json():
+            if status['context'] == self.builder:
+                existing_status = status
         if 'failed' in build_text:
             for step in self.payload['build']['steps']:
                 if 'failed' in step['text']:
@@ -57,7 +67,9 @@ class BuildFinished(BaseBuildbotEvent):
 
             BUILDS[merge_commit][self.suite][self.builder] = False
             print("Build of {0} failed for {1}".format(self.builder, merge_commit))
-        elif 'success' in build_text:
+        elif 'successful' in build_text:
+            if existing_status:  # this builder was previously reported on
+                self.post_status(self.builder, 'success')
             BUILDS[merge_commit][self.suite][self.builder] = True
             print("Build of {0} suceeded for {1}".format(self.builder, merge_commit))
         else:

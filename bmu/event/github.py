@@ -8,6 +8,7 @@ import urlparse
 import urllib
 from .. import github
 from .. import config
+from .. import label
 
 RE_CMD = re.compile("@{0} (?P<cmd>[\w]+) ?(?P<arg>[\w/, ]+)?".format(config.github_user))
 
@@ -22,19 +23,13 @@ def get_bb_builder_names():
     resp = requests.get(bb_url('json/builders'))
     return resp.json().keys()
 
+strip_ns = lambda label: label.replace("{0}/".format(config.namespace), '')
 
 def labels_to_suites(labels):
     suites = filter(lambda label: label.startswith(config.namespace), labels)
     if not suites:
-        return ['*']
-    strip_ns = lambda label: label.replace("{0}/".format(config.namespace), '')
+        return [config.namespace]
     return map(strip_ns, suites)
-
-
-def suite_to_builders(suite, builders):
-    def root_of(builder):
-        return builder.startswith(suite)
-    return filter(root_of, builders)
 
 
 
@@ -97,6 +92,13 @@ class IssueComment(BaseGitHubEvent):
             return
         method(match.group('arg'))
 
+    def suite_to_builders(self, suite, builders):
+        if suite == config.namespace:
+            return map(strip_ns, label.get_configured_labels(self.repo))
+        def root_of(builder):
+            return builder.startswith(suite)
+        return filter(root_of, builders)
+
     def _try(self, suites):
         'Run the [requested] test suite(s)'
         if self.user not in config.developers and self.user not in config.mergers:
@@ -109,7 +111,7 @@ class IssueComment(BaseGitHubEvent):
         BUILDS[self.merge_commit] = {}
         for suite in suites:
             BUILDS[self.merge_commit][suite] = {}
-            builders = suite_to_builders(suite, all_builders)
+            builders = self.suite_to_builders(suite, all_builders)
             for builder in builders:
                 BUILDS[self.merge_commit][suite][builder] = None
             grequests.map(map(functools.partial(self.start_builder, suite), builders))
