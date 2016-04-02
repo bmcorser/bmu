@@ -1,3 +1,4 @@
+import pprint
 from .github import BUILDS  # One day, redis here
 from .. import github
 
@@ -21,8 +22,7 @@ class BuildStarted(BaseBuildbotEvent):
                 'context': props['suite'],
             }
         )
-        print(resp)
-        print("Build started for {0}".format(props['revision']))
+        print("Build started for {0} against {1}".format(props['suite'], props['revision']))
 
 
 class BuildFinished(BaseBuildbotEvent):
@@ -31,6 +31,7 @@ class BuildFinished(BaseBuildbotEvent):
         payload = {'context': context, 'state': status}
         if link:
             payload.update({'target_url': link})
+        print("Posting status: {0}".format(payload))
         return github.sync_post(
             "repos/{0}/statuses/{1}".format(self.repo, self.head_commit),
             json=payload
@@ -38,6 +39,7 @@ class BuildFinished(BaseBuildbotEvent):
 
     def __call__(self):
         props = {k: v for k, v, s in self.payload['build']['properties']}
+        print("Build finished for {0} against {1}".format(props['suite'], props['revision']))
         self.suite = props['suite']
         merge_commit = props['revision']
         self.head_commit = props['head_commit']
@@ -89,13 +91,15 @@ class BuildFinished(BaseBuildbotEvent):
         if all(map(is_done, suite_results)):
             # this suite is complete, so report on it and then drop the key
             if any(map(is_false, suite_results)):
-                self.post_status(self.suite, 'failure')
+                if self.suite != self.builder:  # avoid overwriting link
+                    self.post_status(self.suite, 'failure')
             else:
                 self.post_status(self.suite, 'success')
             del BUILDS[merge_commit][self.suite]
             # if there are no more suites left to run for this commit, drop it
             if not BUILDS[merge_commit]:
                 del BUILDS[merge_commit]
+        pprint.pprint(BUILDS)
 
 
 

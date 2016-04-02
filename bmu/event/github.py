@@ -74,6 +74,7 @@ class IssueComment(BaseGitHubEvent):
         self.repo = self.payload['repository']['full_name']
         self.number = self.payload['issue']['number']
         self.user = self.payload['comment']['user']['login']
+        comment_id = self.payload['comment']['id']
         pr_url = "repos/{0}/pulls/{1}".format(self.repo, self.number)
         pr_json = github.sync_get(pr_url).json()
         self.merge_commit = pr_json['merge_commit_sha']
@@ -90,12 +91,21 @@ class IssueComment(BaseGitHubEvent):
             )
             assert comment_resp.ok
             return
+        delete_resp = github.sync_delete(
+            "repos/{0}/issues/comments/{2}".format(
+                self.repo,
+                self.number,
+                comment_id
+            )
+        )
         method(match.group('arg'))
 
     def suite_to_builders(self, suite, builders):
         if suite == config.namespace:
-            return map(strip_ns, label.get_configured_labels(self.repo))
+            all_suites = map(strip_ns, label.get_configured_labels(self.repo))
+            return set(all_suites).intersection(builders)
         def root_of(builder):
+            'Closure for filter'
             return builder.startswith(suite)
         return filter(root_of, builders)
 
