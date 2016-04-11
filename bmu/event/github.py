@@ -41,6 +41,7 @@ class BaseGitHubEvent(object):
         self.payload = payload
 
     def start_builder(self, suite, name):
+        print("Starting build for {0}, builder is {1}".format(suite, name))
         kwargs = {
             'data': {
                 'forcescheduler': name,
@@ -72,7 +73,6 @@ class Ping(BaseGitHubEvent):
 class IssueComment(BaseGitHubEvent):
 
     def __call__(self):
-        print('IssueComment')
         if 'pull_request' not in self.payload['issue']:
             # This isn’t a comment on a PR
             return
@@ -105,14 +105,15 @@ class IssueComment(BaseGitHubEvent):
         )
         method(match.group('arg'))
 
-    def suite_to_builders(self, suite, builders):
+    def suite_to_builders(self, suite, all_builders):
+        all_suites = map(strip_ns, label.get_configured_labels(self.repo))
         if suite == config.namespace:
-            all_suites = map(strip_ns, label.get_configured_labels(self.repo))
-            return set(all_suites).intersection(builders)
-        def root_of(builder):
-            'Closure for filter'
-            return builder.startswith(suite)
-        return filter(root_of, builders)
+            return set(all_suites).intersection(all_builders)
+        builders = []
+        for builder in all_builders:
+            if builder.startswith(suite) and builder in all_suites:
+                builders.append(builder)
+        return builders
 
     def _try(self, suites):
         'Run the [requested] test suite(s)'
@@ -122,7 +123,6 @@ class IssueComment(BaseGitHubEvent):
             suites = labels_to_suites(map(operator.itemgetter('name'), self.payload['issue']['labels']))
         else:  # specific label requested
             suites = labels_to_suites(map(lambda string: string.strip(','), suites.split()))
-        print(suites)
         all_builders = get_bb_builder_names()
         BUILDS[self.merge_commit] = {}
         for suite in suites:
