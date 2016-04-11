@@ -29,15 +29,6 @@ def get_existing_labels(user_repo):
     return set(filter(is_bmu, map(get_name, labels)))
 
 
-def check_create_resps(resps):
-    for resp in resps:
-        if not resp.ok:
-            for err in resp.json()['errors']:
-                if err['code'] == 'already_exists':
-                    return
-            raise Exception('Could not create label')
-
-
 def delete_create(user_repo, label_set):
     existing_labels = get_existing_labels(user_repo)
     create_fn = functools.partial(github.sync_post,
@@ -48,7 +39,7 @@ def delete_create(user_repo, label_set):
         for name in label_set.difference(existing_labels)
     ]
     create_resps = grequests.map(create)
-    check_create_resps(create_resps)
+    assert all(map(lambda req: req.ok, create_resps))
     delete = []
     for name in existing_labels.difference(label_set):
         delete.append(
