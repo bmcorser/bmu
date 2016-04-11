@@ -1,10 +1,14 @@
 import functools
+import os
+import re
+
 import requests
 import grequests
-import os
+
 from . import constants
 from . import config
 
+RE_HYPERMEDIA = re.compile('<(?P<link>.*?)>; rel="(?P<rel>.*?)"')
 
 def call_json(response):
     # import ipdb;ipdb.set_trace()
@@ -26,6 +30,15 @@ def sync_request(method, url, use_gevent=False, **kwargs):
     auth_tuple = (config.github_user, config.github_token)
     mod = grequests if use_gevent else requests
     return getattr(mod, method)(url, auth=auth_tuple, **kwargs)
+
+def exhaust_pagination(resp):
+    collection = resp.json()
+    link = resp.headers.get('link')
+    if link:
+        next_url = {rel: url for url, rel in re.findall(RE_HYPERMEDIA, link)}.get('next')
+        if next_url:
+            collection.extend(exhaust_pagination(sync_request('get', next_url)))
+    return collection
 
 
 for __method in ['post', 'get', 'delete']:

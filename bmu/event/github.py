@@ -2,10 +2,12 @@
 import functools
 import re
 import operator
-import requests
-import grequests
 import urlparse
 import urllib
+
+import requests
+import grequests
+
 from .. import github
 from .. import config
 from .. import label
@@ -49,6 +51,9 @@ class BaseGitHubEvent(object):
                 'property2_value': self.repo,
                 'property3_name': 'head_commit',
                 'property3_value': self.head_commit,
+                'property4_name': 'github_pr_number',
+                'property4_value': self.number,
+                # 'branch': '+refs/pull/*/merge:refs/remotes/origin/pr/*/merge',
                 'branch': "refs/pull/{0}/merge".format(self.number),
             },
             'auth': tuple(config.buildbot_auth),
@@ -117,6 +122,7 @@ class IssueComment(BaseGitHubEvent):
             suites = labels_to_suites(map(operator.itemgetter('name'), self.payload['issue']['labels']))
         else:  # specific label requested
             suites = labels_to_suites(map(lambda string: string.strip(','), suites.split()))
+        print(suites)
         all_builders = get_bb_builder_names()
         BUILDS[self.merge_commit] = {}
         for suite in suites:

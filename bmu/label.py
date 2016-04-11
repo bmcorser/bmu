@@ -21,10 +21,12 @@ def get_label_names(namespace, label_tree):
 
 
 def get_existing_labels(user_repo):
-    resp = github.sync_get("repos/{0}/labels".format(user_repo))
+    labels = github.exhaust_pagination(
+        github.sync_get("repos/{0}/labels".format(user_repo))
+    )
     get_name = operator.itemgetter('name')
     is_bmu = lambda name: name.startswith(config.namespace)
-    return set(filter(is_bmu, map(get_name, resp.json())))
+    return set(filter(is_bmu, map(get_name, labels)))
 
 
 def check_create_resps(resps):

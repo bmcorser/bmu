@@ -35,8 +35,12 @@ def bb_handle(packet):
     if not handler:
         # print("Buildbot event `{0}` is not of interest.".format(event_name))
         return
-    handler_instance = handler(packet['payload'])
-    reactor.callLater(1, handler_instance)
+    try:
+        handler_instance = handler(packet['payload'])
+        reactor.callLater(1, handler_instance)
+    except KeyError as exc:
+        builder = packet['payload']['build']['builderName']
+        print("Builder {0} not supported".format(builder))
 
 
 @app.route('/buildbot', methods=['POST'])

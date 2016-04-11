@@ -4,28 +4,25 @@ from .. import github
 
 
 class BaseBuildbotEvent(object):
+
     def __init__(self, payload):
+        props = {k: v for k, v, s in payload['build']['properties']}
+        self.suite = props['suite']
+        self.head_commit = props['head_commit']
+        self.merge_commit = props['revision']
+        self.builder = payload['build']['builderName']
+        self.repo = props['repo']
         self.payload = payload
+        self.props = props
 
-    def __call__(self):
-        raise NotImplementedError()
-
-
-class BuildStarted(BaseBuildbotEvent):
-
-    def __call__(self):
-        props = {k: v for k, v, s in self.payload['build']['properties']}
-        resp = github.sync_post(
-            "repos/{0}/statuses/{1}".format(props['repo'], props['head_commit']),
-            json={
-                'state': 'pending',
-                'context': props['suite'],
-            }
+    def get_all_statuses(self):
+        return github.exhaust_pagination(
+            github.sync_get(
+                "repos/{0}/commits/{1}/statuses".format(
+                    self.repo, self.head_commit
+                )
+            )
         )
-        print("Build started for {0} against {1}".format(props['suite'], props['revision']))
-
-
-class BuildFinished(BaseBuildbotEvent):
 
     def post_status(self, context, status, link=None):
         payload = {'context': context, 'state': status}
@@ -38,46 +35,61 @@ class BuildFinished(BaseBuildbotEvent):
         )
 
     def __call__(self):
-        props = {k: v for k, v, s in self.payload['build']['properties']}
-        print("Build finished for {0} against {1}".format(props['suite'], props['revision']))
-        self.suite = props['suite']
-        merge_commit = props['revision']
-        self.head_commit = props['head_commit']
-        self.builder = self.payload['build']['builderName']
-        self.repo = props['repo']
+        raise NotImplementedError()
 
+
+
+class BuildStarted(BaseBuildbotEvent):
+
+    def __call__(self):
+        print("Build of {0} started for {1} against {2}".format(self.builder, self.suite, self.merge_commit))
+        pending_suite = False
+        statuses = self.get_all_statuses()
+        for status in statuses:
+            if status['context'] == self.suite and status['state'] == 'pending':
+                pending_suite = True
+        if not pending_suite:
+            self.post_status(self.suite, 'pending')
+        for status in statuses:
+            if status['context'] == self.builder:
+                self.post_status(self.builder, 'pending')
+                break
+
+
+class BuildFinished(BaseBuildbotEvent):
+
+    def __call__(self):
+        print("Build of {0} finished for {1} against {2}".format(self.builder, self.suite, self.merge_commit))
         build_text = self.payload['build']['text']
         
-        resp = github.sync_get(
-            "repos/{0}/commits/{1}/statuses".format(
-                self.repo, self.head_commit
-            )
-        )
         existing_status = None
-        for status in resp.json():
+        for status in self.get_all_statuses():
             if status['context'] == self.builder:
                 existing_status = status
         if 'failed' in build_text:
             for step in self.payload['build']['steps']:
-                if 'failed' in step['text']:
-                    link = None
-                    try:
-                        link = step['logs'][0][1]
-                    except:
-                        pass  # might be no link
+                link = None
+                try:
+                    if 'failed' in step['text']:
+                        try:
+                            link = step['logs'][0][1]
+                        except:
+                            pass  # might be no link
+                        self.post_status(self.builder, 'failure', link)
+                except KeyError:
                     self.post_status(self.builder, 'failure', link)
 
-            BUILDS[merge_commit][self.suite][self.builder] = False
-            print("Build of {0} failed for {1}".format(self.builder, merge_commit))
+            BUILDS[self.merge_commit][self.suite][self.builder] = False
+            print("Build of {0} failed for {1} against {2}".format(self.builder, self.suite, self.merge_commit))
         elif 'successful' in build_text:
             if existing_status:  # this builder was previously reported on
                 self.post_status(self.builder, 'success')
-            BUILDS[merge_commit][self.suite][self.builder] = True
-            print("Build of {0} suceeded for {1}".format(self.builder, merge_commit))
+            BUILDS[self.merge_commit][self.suite][self.builder] = True
+            print("Build of {0} succeeded for {1} against {2}".format(self.builder, self.suite, self.merge_commit))
         else:
-            BUILDS[merge_commit][self.suite][self.builder] = False
+            BUILDS[self.merge_commit][self.suite][self.builder] = False
             self.post_status(self.builder, 'failure', '-'.join(build_text))
-            print("Build of {0} did something else for {1}".format(self.builder, merge_commit))
+            print("Build of {0} errored for {1} against {2}".format(self.builder, self.suite, self.merge_commit))
         print(build_text)
 
         def is_done(result):
@@ -86,7 +98,7 @@ class BuildFinished(BaseBuildbotEvent):
         def is_false(result):
             return result is False
 
-        suite_results = BUILDS[merge_commit][self.suite].values()
+        suite_results = BUILDS[self.merge_commit][self.suite].values()
 
         if all(map(is_done, suite_results)):
             # this suite is complete, so report on it and then drop the key
@@ -95,10 +107,10 @@ class BuildFinished(BaseBuildbotEvent):
                     self.post_status(self.suite, 'failure')
             else:
                 self.post_status(self.suite, 'success')
-            del BUILDS[merge_commit][self.suite]
+            del BUILDS[self.merge_commit][self.suite]
             # if there are no more suites left to run for this commit, drop it
-            if not BUILDS[merge_commit]:
-                del BUILDS[merge_commit]
+            if not BUILDS[self.merge_commit]:
+                del BUILDS[self.merge_commit]
         pprint.pprint(BUILDS)
 
 
