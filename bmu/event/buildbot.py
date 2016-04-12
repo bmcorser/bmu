@@ -78,6 +78,8 @@ class BuildFinished(BaseBuildbotEvent):
                         self.post_status(self.builder, 'failure', link)
                 except KeyError:
                     self.post_status(self.builder, 'failure', link)
+            if not self.payload['build']['steps']:
+                self.post_status(self.builder, 'failure')
 
             BUILDS[self.merge_commit][self.suite][self.builder] = False
             print("Build of {0} failed for {1} against {2}".format(self.builder, self.suite, self.merge_commit))
@@ -90,20 +92,14 @@ class BuildFinished(BaseBuildbotEvent):
             BUILDS[self.merge_commit][self.suite][self.builder] = False
             self.post_status(self.builder, 'failure', '-'.join(build_text))
             print("Build of {0} errored for {1} against {2}".format(self.builder, self.suite, self.merge_commit))
-        print(build_text)
-
-        def is_done(result):
-            return result in (True, False)
-
-        def is_false(result):
-            return result is False
 
         suite_results = BUILDS[self.merge_commit][self.suite].values()
 
-        if all(map(is_done, suite_results)):
+        if all([True for result in suite_results if result in (True, False)]):
             # this suite is complete, so report on it and then drop the key
-            if any(map(is_false, suite_results)):
+            if any([True for result in suite_results if result is False]):  # did anything fail?
                 if self.suite != self.builder:  # avoid overwriting link
+                                                # in case of leaf suite
                     self.post_status(self.suite, 'failure')
             else:
                 self.post_status(self.suite, 'success')
