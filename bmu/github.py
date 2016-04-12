@@ -1,6 +1,7 @@
 import functools
 import os
 import re
+import time
 
 import requests
 import grequests
@@ -29,7 +30,14 @@ def sync_request(method, url, use_gevent=False, **kwargs):
         url = os.path.join(constants.GITHUB_API, url)
     auth_tuple = (config.github_user, config.github_token)
     mod = grequests if use_gevent else requests
-    return getattr(mod, method)(url, auth=auth_tuple, **kwargs)
+    def maybe_timeout():
+        return getattr(mod, method)(url, auth=auth_tuple, timeout=2, **kwargs)
+    try:
+        return maybe_timeout()
+    except requests.exceptions.ReadTimeout:
+        # retry once
+        return maybe_timeout()
+
 
 def exhaust_pagination(resp):
     collection = resp.json()
@@ -37,6 +45,7 @@ def exhaust_pagination(resp):
     if link:
         next_url = {rel: url for url, rel in re.findall(RE_HYPERMEDIA, link)}.get('next')
         if next_url:
+            time.sleep(0.5)
             collection.extend(exhaust_pagination(sync_request('get', next_url)))
     return collection
 
