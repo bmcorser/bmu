@@ -45,7 +45,7 @@ def exhaust_pagination(resp):
     if link:
         next_url = {rel: url for url, rel in re.findall(RE_HYPERMEDIA, link)}.get('next')
         if next_url:
-            time.sleep(0.5)
+            time.sleep(0.5)  # don't anger GitHub
             collection.extend(exhaust_pagination(sync_request('get', next_url)))
     return collection
 
