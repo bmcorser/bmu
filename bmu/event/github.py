@@ -18,17 +18,20 @@ BUILDS = {}  # One day, redis here
 
 
 def bb_url(path):
+    'Convenience for getting a buildbot url'
     return urlparse.urljoin(config.buildbot_url, path)
 
 
 def get_bb_builder_names():
+    'Return names of buildbot builders'
     resp = requests.get(bb_url('json/builders'))
     return resp.json().keys()
 
 strip_ns = lambda label: label.replace("{0}/".format(config.namespace), '')
 
 def labels_to_suites(labels):
-    suites = filter(lambda label: label.startswith(config.namespace), labels)
+    'Strip namespace from labels, yielding "suites" or just the root "suite"'
+    suites = [label for label in labels if label.startswith(config.namespace)]
     if not suites:
         return [config.namespace]
     return map(strip_ns, suites)
@@ -73,6 +76,7 @@ class Ping(BaseGitHubEvent):
 class IssueComment(BaseGitHubEvent):
 
     def __call__(self):
+        print('IssueComment')
         if 'pull_request' not in self.payload['issue']:
             # This isn’t a comment on a PR
             return
