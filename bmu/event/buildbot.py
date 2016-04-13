@@ -98,7 +98,8 @@ class BuildFinished(BaseBuildbotEvent):
         suite_results = state.get(self.merge_commit, self.suite).values()
         print(suite_results)
 
-        if all([True for result in suite_results if result in (True, False)]):
+        if all([result in (True, False) for result in suite_results]):
+            print('All builders for suite finished')
             # this suite is complete, so report on it and then drop the key
             if any([True for result in suite_results if result is False]):  # did anything fail?
                 if self.suite != self.builder:  # avoid overwriting link

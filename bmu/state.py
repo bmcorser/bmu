@@ -46,7 +46,7 @@ def _set(merge_commit, state_):
 def set_frag(merge_commit, state_frag, suite=None, builder=None):
     'Set some state node'
     with _get_lock(merge_commit):
-        state_ = get(merge_commit) or {}
+        state_ = get(merge_commit)
         if not suite:
             state_.update(state_frag)
             return _set(merge_commit, state_)
