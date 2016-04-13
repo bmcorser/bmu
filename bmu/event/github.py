@@ -8,13 +8,13 @@ import urllib
 import requests
 import grequests
 
+from .. import constants
 from .. import github
 from .. import config
 from .. import label
+from .. import state
 
 RE_CMD = re.compile("@{0} (?P<cmd>[\w]+) ?(?P<arg>[\w/, ]+)?".format(config.github_user))
-
-BUILDS = {}  # One day, redis here
 
 
 def bb_url(path):
@@ -128,12 +128,10 @@ class IssueComment(BaseGitHubEvent):
         else:  # specific label requested
             suites = labels_to_suites(map(lambda string: string.strip(','), suites.split()))
         all_builders = get_bb_builder_names()
-        BUILDS[self.merge_commit] = {}
         for suite in suites:
-            BUILDS[self.merge_commit][suite] = {}
             builders = self.suite_to_builders(suite, all_builders)
             for builder in builders:
-                BUILDS[self.merge_commit][suite][builder] = None
+                state.set(self.merge_commit, suite, builder, None)
             grequests.map(map(functools.partial(self.start_builder, suite), builders))
 
     def _merge(self, *args):

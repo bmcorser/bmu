@@ -1,6 +1,6 @@
 import setuptools
 
-VERSION = '0.0.3'
+VERSION = '0.0.4'
 
 setuptools.setup(
     name='bmu',
@@ -17,6 +17,7 @@ setuptools.setup(
         'pycrypto',
         'pyyaml',
         'requests',
+        'redlock',
     ],
     tests_require=['pytest'],
 )

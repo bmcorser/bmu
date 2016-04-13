@@ -34,10 +34,13 @@ def delete_create(user_repo, label_set):
     create_fn = functools.partial(github.sync_post,
                                   "repos/{0}/labels".format(user_repo),
                                   use_gevent=True)
-    create = [
-        create_fn(json={'name': name, "color": "0074d9"})
-        for name in label_set.difference(existing_labels)
-    ]
+    to_create = label_set.difference(existing_labels)
+    create = []
+    if to_create:
+        print('Creating labels:')
+    for name in to_create:
+        print("  {0}".format(name))
+        create.append(create_fn(json={'name': name, "color": "0074d9"}))
     create_resps = grequests.map(create)
     assert all(map(lambda req: req.ok, create_resps))
     delete = []

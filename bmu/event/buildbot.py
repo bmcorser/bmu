@@ -1,5 +1,5 @@
 import pprint
-from .github import BUILDS  # One day, redis here
+from .. import state
 from .. import github
 
 
@@ -67,6 +67,7 @@ class BuildFinished(BaseBuildbotEvent):
             if status['context'] == self.builder:
                 existing_status = status
         if 'failed' in build_text:
+            posted = False
             for step in self.payload['build']['steps']:
                 link = None
                 try:
@@ -75,25 +76,27 @@ class BuildFinished(BaseBuildbotEvent):
                             link = step['logs'][0][1]
                         except:
                             pass  # might be no link
-                        self.post_status(self.builder, 'failure', link)
+                        posted = self.post_status(self.builder, 'failure', link).ok
+                    link = step['urls'].values()[0]
                 except KeyError:
-                    self.post_status(self.builder, 'failure', link)
-            if not self.payload['build']['steps']:
-                self.post_status(self.builder, 'failure')
+                    posted = self.post_status(self.builder, 'failure', link).ok
+            if not posted:
+                self.post_status(self.builder, 'failure', link)
 
-            BUILDS[self.merge_commit][self.suite][self.builder] = False
+            state.set(self.merge_commit, self.suite, self.builder, False)
             print("Build of {0} failed for {1} against {2}".format(self.builder, self.suite, self.merge_commit))
         elif 'successful' in build_text:
             if existing_status:  # this builder was previously reported on
                 self.post_status(self.builder, 'success')
-            BUILDS[self.merge_commit][self.suite][self.builder] = True
+            state.set(self.merge_commit, self.suite, self.builder, True)
             print("Build of {0} succeeded for {1} against {2}".format(self.builder, self.suite, self.merge_commit))
         else:
-            BUILDS[self.merge_commit][self.suite][self.builder] = False
+            state.set(self.merge_commit, self.suite, self.builder, False)
             self.post_status(self.builder, 'failure', '-'.join(build_text))
             print("Build of {0} errored for {1} against {2}".format(self.builder, self.suite, self.merge_commit))
 
-        suite_results = BUILDS[self.merge_commit][self.suite].values()
+        suite_results = state.get(self.merge_commit, self.suite).values()
+        print(suite_results)
 
         if all([True for result in suite_results if result in (True, False)]):
             # this suite is complete, so report on it and then drop the key
@@ -103,12 +106,11 @@ class BuildFinished(BaseBuildbotEvent):
                     self.post_status(self.suite, 'failure')
             else:
                 self.post_status(self.suite, 'success')
-            del BUILDS[self.merge_commit][self.suite]
+            state.drop(self.merge_commit, self.suite)
             # if there are no more suites left to run for this commit, drop it
-            if not BUILDS[self.merge_commit]:
-                del BUILDS[self.merge_commit]
-        pprint.pprint(BUILDS)
-
+            if not state.get(self.merge_commit):
+                state.drop(self.merge_commit)
+        state._debug()
 
 
 handler = {

@@ -4,4 +4,4 @@ plumbum
 pycrypto
 pyyaml
 requests
-treq
+redlock
