@@ -43,13 +43,16 @@ def _set(merge_commit, state_):
     return redis.set(merge_commit, json.dumps(state_))
 
 
-def set_frag(merge_commit, state_frag, suite=None, builder=None):
+def set_frag(merge_commit, state_frag, suite=None, builder=None, update=True):
     'Set some state node'
     with _get_lock(merge_commit):
         state_ = get(merge_commit)
         if not suite:
-            state_.update(state_frag)
-            return _set(merge_commit, state_)
+            if update:
+                state_.update(state_frag)
+                return _set(merge_commit, state_)
+            else:
+                return _set(merge_commit, state_frag)
         if not builder:
             state_[suite] = state_frag
             return _set(merge_commit, state_)
@@ -71,6 +74,6 @@ def drop(merge_commit, suite=None, builder=None):
     state_ = get(merge_commit)
     if not builder:
         del state_[suite]
-        return set_frag(merge_commit, state_)
+        return set_frag(merge_commit, state_, update=False)
     del state_[suite][builder]
-    return set_frag(merge_commit, state_)
+    return set_frag(merge_commit, state_, update=False)
