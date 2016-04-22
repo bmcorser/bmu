@@ -34,7 +34,7 @@ def labels_to_suites(labels):
     suites = [label for label in labels if label.startswith(config.namespace)]
     if not suites:
         return [config.namespace]
-    return map(strip_ns, suites)
+    return set(map(strip_ns, suites))
 
 
 
@@ -77,9 +77,13 @@ class IssueComment(BaseGitHubEvent):
 
     def __call__(self):
         print('IssueComment')
-        if 'pull_request' not in self.payload['issue']:
-            # This isn’t a comment on a PR
-            return
+
+        # This event isn’t about a comment being created
+        if not self.payload['action'] ==  'created': return
+
+        # This isn’t a comment on a PR
+        if 'pull_request' not in self.payload['issue']: return
+
         self.repo = self.payload['repository']['full_name']
         self.number = self.payload['issue']['number']
         self.user = self.payload['comment']['user']['login']
@@ -107,6 +111,7 @@ class IssueComment(BaseGitHubEvent):
                 comment_id
             )
         )
+        print("Calling method: {0}".format(match.group('arg')))
         method(match.group('arg'))
 
     def suite_to_builders(self, suite, all_builders):
@@ -117,7 +122,7 @@ class IssueComment(BaseGitHubEvent):
         for builder in all_builders:
             if builder.startswith(suite) and builder in all_suites:
                 builders.append(builder)
-        return builders
+        return set(builders)
 
     def _try(self, suites):
         'Run the [requested] test suite(s)'
